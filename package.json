@@ -1,0 +1,10 @@
+{
+  "name": "portfolio-chat-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "MichaelLLM - Portfolio chat backend with OpenAI integration",
+  "engines": {
+    "node": ">=18"
+  }
+}
