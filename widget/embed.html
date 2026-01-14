@@ -4,8 +4,7 @@
   INSTALLATION:
   1. Copy everything below into Webflow: Project Settings > Custom Code > Footer Code
   2. Add a button in your nav with: onclick="toggleMichaelLLM()"
-  3. Update ENDPOINT below with your Vercel URL
-  4. Publish your Webflow site
+  3. Publish your Webflow site
 -->
 
 <style>
@@ -17,28 +16,15 @@
   --mllm-text: #1A202C;
   --mllm-text-light: #718096;
   --mllm-border: #E2E8F0;
-  --mllm-user-bg: #EDF2F7;
-  --mllm-bot-bg: #FFFFFF;
+  --mllm-user-bg: #F7F7F7;
   --mllm-width: 400px;
   --mllm-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --mllm-coral: #E07B67;
 }
 
+/* Overlay removed - user can interact with page while chat is open */
 #mllm-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-  z-index: 9998;
-}
-
-#mllm-overlay.mllm-open {
-  opacity: 1;
-  visibility: visible;
+  display: none;
 }
 
 #mllm-panel {
@@ -94,11 +80,11 @@ body {
 .mllm-header-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .mllm-title {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--mllm-text);
   letter-spacing: 0.5px;
@@ -146,20 +132,27 @@ body {
   visibility: visible;
 }
 
+.mllm-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mllm-refresh-btn,
 .mllm-close-btn {
   background: none;
   border: none;
   cursor: pointer;
   color: var(--mllm-text-light);
-  padding: 8px;
+  padding: 6px;
   display: flex;
   align-items: center;
   border-radius: 6px;
-  transition: background 0.2s, color 0.2s;
+  transition: color 0.2s;
 }
 
+.mllm-refresh-btn:hover,
 .mllm-close-btn:hover {
-  background: var(--mllm-user-bg);
   color: var(--mllm-text);
 }
 
@@ -170,64 +163,79 @@ body {
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .mllm-welcome {
-  text-align: center;
   padding: 20px 0;
 }
 
 .mllm-welcome-title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--mllm-text);
-  margin-bottom: 8px;
+  margin-bottom: 24px;
 }
 
-.mllm-welcome-sub {
-  font-size: 14px;
-  color: var(--mllm-text-light);
-}
-
-/* Seed Prompts */
+/* Seed Prompts - Arrow style */
 .mllm-seeds {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 16px;
+  gap: 4px;
 }
 
 .mllm-seed-btn {
   background: none;
-  border: 1px solid var(--mllm-border);
-  border-radius: 8px;
-  padding: 12px 16px;
+  border: none;
+  padding: 8px 0;
   text-align: left;
   font-size: 14px;
-  color: var(--mllm-text);
+  color: var(--mllm-text-light);
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   line-height: 1.4;
+  transition: color 0.2s;
+  position: relative;
 }
 
 .mllm-seed-btn:hover {
-  border-color: var(--mllm-accent);
-  background: var(--mllm-user-bg);
+  color: var(--mllm-text);
 }
 
 .mllm-seed-arrow {
   color: var(--mllm-text-light);
   flex-shrink: 0;
-  margin-top: 2px;
+  font-size: 14px;
+}
+
+.mllm-seed-btn:hover .mllm-seed-arrow {
+  color: var(--mllm-text);
+}
+
+/* Hover dot animation */
+.mllm-hover-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--mllm-coral);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.mllm-seed-btn:hover .mllm-hover-dot,
+.mllm-followup-btn:hover .mllm-hover-dot {
+  opacity: 1;
+  transform: scale(1);
 }
 
 /* Message Bubbles */
 .mllm-message {
-  max-width: 90%;
+  max-width: 100%;
   animation: mllm-fade-in 0.3s ease;
 }
 
@@ -238,38 +246,69 @@ body {
 
 .mllm-message-user {
   align-self: flex-end;
+  max-width: 85%;
 }
 
 .mllm-message-bot {
   align-self: flex-start;
 }
 
-.mllm-bubble {
-  padding: 12px 16px;
-  border-radius: 16px;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
+/* User bubble - rounded pill style */
 .mllm-message-user .mllm-bubble {
   background: var(--mllm-user-bg);
   color: var(--mllm-text);
-  border-bottom-right-radius: 4px;
+  padding: 10px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  line-height: 1.5;
+  display: inline-block;
 }
 
+/* Bot message - no bubble, just text */
 .mllm-message-bot .mllm-bubble {
-  background: var(--mllm-bot-bg);
   color: var(--mllm-text);
-  border: 1px solid var(--mllm-border);
-  border-bottom-left-radius: 4px;
+  font-size: 14px;
+  line-height: 1.7;
+  padding: 0;
 }
 
-/* Follow-ups */
+/* Typing blur effect */
+.mllm-message-bot .mllm-bubble.mllm-typing-active {
+  mask-image: linear-gradient(to right, #000 85%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, #000 85%, transparent 100%);
+}
+
+.mllm-message-bot .mllm-bubble strong {
+  font-weight: 600;
+}
+
+.mllm-message-bot .mllm-bubble ul {
+  margin: 8px 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.mllm-message-bot .mllm-bubble li {
+  position: relative;
+  padding-left: 16px;
+  margin-bottom: 6px;
+}
+
+.mllm-message-bot .mllm-bubble li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--mllm-text);
+  font-weight: bold;
+}
+
+/* Follow-ups - minimal arrow style with hover dot */
 .mllm-followups {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-top: 12px;
+  gap: 4px;
+  margin-top: 16px;
+  padding-top: 8px;
 }
 
 .mllm-followup-btn {
@@ -277,12 +316,12 @@ body {
   border: none;
   padding: 8px 0;
   text-align: left;
-  font-size: 13px;
-  color: var(--mllm-accent);
+  font-size: 14px;
+  color: var(--mllm-text-light);
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   transition: color 0.2s;
 }
 
@@ -291,21 +330,22 @@ body {
 }
 
 .mllm-followup-arrow {
-  font-size: 12px;
+  font-size: 14px;
+  flex-shrink: 0;
 }
 
 /* Typing Indicator */
 .mllm-typing {
   display: flex;
   gap: 4px;
-  padding: 16px;
+  padding: 8px 0;
   align-items: center;
 }
 
 .mllm-typing-dot {
   width: 8px;
   height: 8px;
-  background: var(--mllm-text-light);
+  background: var(--mllm-coral);
   border-radius: 50%;
   animation: mllm-bounce 1.4s infinite ease-in-out both;
 }
@@ -322,7 +362,6 @@ body {
 /* Rate Limit Message */
 .mllm-rate-limit {
   background: #FEF3C7;
-  border: 1px solid #F59E0B;
   border-radius: 12px;
   padding: 16px;
   text-align: center;
@@ -340,59 +379,58 @@ body {
   color: #B45309;
 }
 
-/* Input Area */
+/* Input Area - Clean minimal style */
 .mllm-input-area {
-  padding: 16px 20px;
-  border-top: 1px solid var(--mllm-border);
+  padding: 16px 20px 24px;
   flex-shrink: 0;
 }
 
 .mllm-input-wrapper {
   display: flex;
-  gap: 10px;
-  align-items: flex-end;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--mllm-border);
+  padding-bottom: 8px;
 }
 
 .mllm-input {
   flex: 1;
-  border: 1px solid var(--mllm-border);
-  border-radius: 12px;
-  padding: 12px 16px;
+  border: none;
+  padding: 8px 0;
   font-size: 14px;
   font-family: inherit;
   resize: none;
-  min-height: 44px;
+  min-height: 24px;
   max-height: 120px;
   outline: none;
-  transition: border-color 0.2s;
+  background: transparent;
+  color: var(--mllm-text);
 }
 
-.mllm-input:focus {
-  border-color: var(--mllm-accent);
+.mllm-input::placeholder {
+  color: var(--mllm-text-light);
 }
 
 .mllm-input:disabled {
-  background: var(--mllm-user-bg);
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .mllm-send-btn {
-  background: var(--mllm-primary);
+  background: none;
   border: none;
-  border-radius: 10px;
-  width: 44px;
-  height: 44px;
+  padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: white;
-  transition: background 0.2s, transform 0.1s;
+  color: var(--mllm-text-light);
+  transition: color 0.2s, transform 0.1s;
   flex-shrink: 0;
 }
 
 .mllm-send-btn:hover:not(:disabled) {
-  background: var(--mllm-accent);
+  color: var(--mllm-text);
 }
 
 .mllm-send-btn:active:not(:disabled) {
@@ -400,15 +438,8 @@ body {
 }
 
 .mllm-send-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.3;
   cursor: not-allowed;
-}
-
-.mllm-footer {
-  text-align: center;
-  padding: 8px 20px 16px;
-  font-size: 11px;
-  color: var(--mllm-text-light);
 }
 </style>
 
@@ -422,7 +453,7 @@ body {
     <div class="mllm-header-left">
       <span class="mllm-title">MICHAELLLM</span>
       <button class="mllm-info-btn" aria-label="Info">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"></circle>
           <line x1="12" y1="16" x2="12" y2="12"></line>
           <line x1="12" y1="8" x2="12.01" y2="8"></line>
@@ -434,12 +465,20 @@ body {
         </div>
       </button>
     </div>
-    <button class="mllm-close-btn" onclick="toggleMichaelLLM()" aria-label="Close">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <line x1="18" y1="6" x2="6" y2="18"></line>
-        <line x1="6" y1="6" x2="18" y2="18"></line>
-      </svg>
-    </button>
+    <div class="mllm-header-right">
+      <button class="mllm-refresh-btn" onclick="mllmReset()" aria-label="Reset conversation">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+      </button>
+      <button class="mllm-close-btn" onclick="toggleMichaelLLM()" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
   </div>
 
   <!-- Messages -->
@@ -456,18 +495,15 @@ body {
         placeholder="Ask about Michael..."
         rows="1"
         onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();mllmSend();}"
+        oninput="this.style.height='24px';this.style.height=this.scrollHeight+'px';"
       ></textarea>
       <button class="mllm-send-btn" id="mllm-send-btn" onclick="mllmSend()" aria-label="Send">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="22" y1="2" x2="11" y2="13"></line>
-          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          <line x1="12" y1="19" x2="12" y2="5"></line>
+          <polyline points="5 12 12 5 19 12"></polyline>
         </svg>
       </button>
     </div>
-  </div>
-
-  <div class="mllm-footer">
-    Powered by AI • May contain inaccuracies
   </div>
 </div>
 
@@ -476,13 +512,14 @@ body {
   'use strict';
 
   // ==========================================================================
-  // CONFIGURATION - UPDATE THIS!
+  // CONFIGURATION
   // ==========================================================================
   
-  const ENDPOINT = 'https://YOUR-VERCEL-URL.vercel.app/api/chat';  // <-- REPLACE THIS
+  const ENDPOINT = 'https://portfolio-chat-backend.vercel.app/api/chat';
+  const TYPING_SPEED = 6; // ms per character (very fast)
   
   // ==========================================================================
-  // SEED PROMPTS (from your prompt pack)
+  // SEED PROMPTS
   // ==========================================================================
   
   const SEED_PROMPTS = [
@@ -516,10 +553,11 @@ body {
   const SESSION_KEY = 'mllm_session';
   const HISTORY_KEY = 'mllm_history';
   const MAX_MESSAGES = 20;
-  const RATE_LIMIT_WINDOW = 30 * 60 * 1000; // 30 minutes
+  const RATE_LIMIT_WINDOW = 30 * 60 * 1000;
 
   let isOpen = false;
   let isLoading = false;
+  let isTyping = false;
   let history = [];
   let sessionId = '';
   let rateLimitData = { count: 0, windowStart: 0 };
@@ -529,14 +567,12 @@ body {
   // ==========================================================================
 
   function init() {
-    // Load or create session
     sessionId = localStorage.getItem(SESSION_KEY);
     if (!sessionId) {
       sessionId = 'sess_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
       localStorage.setItem(SESSION_KEY, sessionId);
     }
 
-    // Load history
     try {
       const savedHistory = localStorage.getItem(HISTORY_KEY);
       if (savedHistory) {
@@ -546,12 +582,10 @@ body {
       history = [];
     }
 
-    // Load rate limit data
     try {
       const savedRate = localStorage.getItem(RATE_LIMIT_KEY);
       if (savedRate) {
         rateLimitData = JSON.parse(savedRate);
-        // Reset if window expired
         if (Date.now() - rateLimitData.windowStart > RATE_LIMIT_WINDOW) {
           rateLimitData = { count: 0, windowStart: Date.now() };
         }
@@ -576,7 +610,7 @@ body {
       panel.classList.add('mllm-open');
       overlay.classList.add('mllm-open');
       document.body.classList.add('mllm-panel-open');
-      document.getElementById('mllm-input').focus();
+      setTimeout(() => document.getElementById('mllm-input').focus(), 300);
     } else {
       panel.classList.remove('mllm-open');
       overlay.classList.remove('mllm-open');
@@ -584,13 +618,18 @@ body {
     }
   };
 
-  // Alias for flexibility
   window.openMichaelLLM = function() {
     if (!isOpen) toggleMichaelLLM();
   };
 
   window.closeMichaelLLM = function() {
     if (isOpen) toggleMichaelLLM();
+  };
+
+  window.mllmReset = function() {
+    history = [];
+    localStorage.removeItem(HISTORY_KEY);
+    renderMessages();
   };
 
   // ==========================================================================
@@ -600,7 +639,6 @@ body {
   function renderMessages() {
     const container = document.getElementById('mllm-messages');
     
-    // Check if rate limited
     if (isRateLimited()) {
       const remaining = Math.ceil((rateLimitData.windowStart + RATE_LIMIT_WINDOW - Date.now()) / 60000);
       container.innerHTML = renderRateLimitMessage(remaining);
@@ -608,19 +646,16 @@ body {
       return;
     }
 
-    // If no history, show welcome + seeds
     if (history.length === 0) {
       container.innerHTML = renderWelcome();
       return;
     }
 
-    // Render conversation
     let html = '';
     history.forEach((msg, idx) => {
-      html += renderMessageBubble(msg.role, msg.content);
+      html += renderMessageBubble(msg.role, msg.content, msg.id);
       
-      // Add follow-ups after last bot message
-      if (msg.role === 'assistant' && idx === history.length - 1 && msg.followups) {
+      if (msg.role === 'assistant' && idx === history.length - 1 && msg.followups && !isTyping) {
         html += renderFollowups(msg.followups);
       }
     });
@@ -630,30 +665,30 @@ body {
   }
 
   function renderWelcome() {
-    // Pick 3 random seeds
     const shuffled = [...SEED_PROMPTS].sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, 3);
 
     return `
       <div class="mllm-welcome">
         <div class="mllm-welcome-title">Hey there, I'm MichaelLLM.</div>
-        <div class="mllm-welcome-sub">Ask me anything about Michael's work.</div>
-      </div>
-      <div class="mllm-seeds">
-        ${selected.map(prompt => `
-          <button class="mllm-seed-btn" onclick="mllmAsk('${escapeHtml(prompt)}')">
-            <span class="mllm-seed-arrow">↳</span>
-            <span>${escapeHtml(prompt)}</span>
-          </button>
-        `).join('')}
+        <div class="mllm-seeds">
+          ${selected.map(prompt => `
+            <button class="mllm-seed-btn" onclick="mllmAsk('${escapeHtml(prompt)}')">
+              <span class="mllm-seed-arrow">↳</span>
+              <span>${escapeHtml(prompt)}</span>
+              <span class="mllm-hover-dot"></span>
+            </button>
+          `).join('')}
+        </div>
       </div>
     `;
   }
 
-  function renderMessageBubble(role, content) {
+  function renderMessageBubble(role, content, id) {
     const className = role === 'user' ? 'mllm-message-user' : 'mllm-message-bot';
+    const messageId = id || 'msg-' + Math.random().toString(36).substr(2, 9);
     return `
-      <div class="mllm-message ${className}">
+      <div class="mllm-message ${className}" id="${messageId}">
         <div class="mllm-bubble">${formatMessage(content)}</div>
       </div>
     `;
@@ -667,6 +702,7 @@ body {
           <button class="mllm-followup-btn" onclick="mllmAsk('${escapeHtml(f)}', true)">
             <span class="mllm-followup-arrow">↳</span>
             <span>${escapeHtml(f)}</span>
+            <span class="mllm-hover-dot"></span>
           </button>
         `).join('')}
       </div>
@@ -675,7 +711,7 @@ body {
 
   function renderTypingIndicator() {
     return `
-      <div class="mllm-message mllm-message-bot">
+      <div class="mllm-message mllm-message-bot" id="mllm-typing-indicator">
         <div class="mllm-typing">
           <div class="mllm-typing-dot"></div>
           <div class="mllm-typing-dot"></div>
@@ -698,6 +734,62 @@ body {
   }
 
   // ==========================================================================
+  // TYPEWRITER EFFECT
+  // ==========================================================================
+
+  async function typewriterEffect(element, text, followups) {
+    isTyping = true;
+    const formattedText = formatMessage(text);
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = formattedText;
+    const plainText = tempDiv.textContent || tempDiv.innerText;
+    
+    element.innerHTML = '';
+    element.classList.add('mllm-typing-active');
+    let currentIndex = 0;
+    
+    return new Promise((resolve) => {
+      function typeNextChar() {
+        if (currentIndex < plainText.length) {
+          const char = plainText[currentIndex];
+          element.textContent += char;
+          currentIndex++;
+          
+          const container = document.getElementById('mllm-messages');
+          container.scrollTop = container.scrollHeight;
+          
+          // Faster delays at punctuation (but still noticeable pause)
+          let delay = TYPING_SPEED;
+          if (['.', '!', '?'].includes(char)) {
+            delay = TYPING_SPEED * 3;
+          } else if ([',', ';', ':'].includes(char)) {
+            delay = TYPING_SPEED * 1.5;
+          }
+          
+          setTimeout(typeNextChar, delay);
+        } else {
+          // Done typing - remove blur, show formatted version
+          element.classList.remove('mllm-typing-active');
+          element.innerHTML = formattedText;
+          isTyping = false;
+          
+          if (followups && followups.length > 0) {
+            const messageDiv = element.closest('.mllm-message');
+            if (messageDiv) {
+              const followupsHtml = renderFollowups(followups);
+              messageDiv.insertAdjacentHTML('afterend', followupsHtml);
+            }
+          }
+          
+          resolve();
+        }
+      }
+      
+      typeNextChar();
+    });
+  }
+
+  // ==========================================================================
   // API CALLS
   // ==========================================================================
 
@@ -707,14 +799,14 @@ body {
   };
 
   window.mllmSend = async function(clickedSuggestion = null) {
-    if (isLoading || isRateLimited()) return;
+    if (isLoading || isTyping || isRateLimited()) return;
 
     const input = document.getElementById('mllm-input');
     const message = input.value.trim();
     if (!message) return;
 
-    // Clear input
     input.value = '';
+    input.style.height = '24px';
 
     // Update rate limit
     if (rateLimitData.count === 0 || Date.now() - rateLimitData.windowStart > RATE_LIMIT_WINDOW) {
@@ -724,7 +816,6 @@ body {
     }
     localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(rateLimitData));
 
-    // Check if now rate limited
     if (isRateLimited()) {
       renderMessages();
       return;
@@ -756,18 +847,36 @@ body {
 
       const data = await response.json();
 
+      // Remove typing indicator
+      const typingIndicator = document.getElementById('mllm-typing-indicator');
+      if (typingIndicator) typingIndicator.remove();
+
       if (response.ok) {
-        // Add bot response
+        const msgId = 'msg-' + Math.random().toString(36).substr(2, 9);
+        
+        // Add bot response to history
         history.push({ 
           role: 'assistant', 
           content: data.reply,
-          followups: data.followups || []
+          followups: data.followups || [],
+          id: msgId
         });
 
         // Save history
         localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(-20)));
+
+        // Render message bubble (empty initially for typewriter)
+        container.innerHTML += `
+          <div class="mllm-message mllm-message-bot" id="${msgId}">
+            <div class="mllm-bubble"></div>
+          </div>
+        `;
+
+        // Typewriter effect
+        const bubbleEl = document.querySelector(`#${msgId} .mllm-bubble`);
+        await typewriterEffect(bubbleEl, data.reply, data.followups);
+
       } else {
-        // Handle errors
         if (data.error === 'rate_limited') {
           rateLimitData.count = MAX_MESSAGES + 1;
           localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(rateLimitData));
@@ -777,19 +886,24 @@ body {
           content: data.message || 'Sorry, something went wrong. Please try again!',
           followups: []
         });
+        renderMessages();
       }
     } catch (e) {
       console.error('MichaelLLM error:', e);
+      const typingIndicator = document.getElementById('mllm-typing-indicator');
+      if (typingIndicator) typingIndicator.remove();
+      
       history.push({ 
         role: 'assistant', 
         content: "Hmm, I'm having trouble connecting. Please check your internet and try again!",
         followups: []
       });
+      renderMessages();
     }
 
     isLoading = false;
     disableInput(false);
-    renderMessages();
+    container.scrollTop = container.scrollHeight;
   };
 
   // ==========================================================================
@@ -817,25 +931,31 @@ body {
   }
 
   function formatMessage(content) {
-    // Escape HTML first
     let safe = escapeHtml(content);
     
-    // Convert markdown-style formatting
-    // Bold: **text** or __text__
+    // Bold
     safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     safe = safe.replace(/__(.*?)__/g, '<strong>$1</strong>');
     
+    // Numbered lists
+    safe = safe.replace(/^\d+\.\s+(.*)$/gm, '<li>$1</li>');
+    
     // Bullet points
     safe = safe.replace(/^[\-\*]\s+(.*)$/gm, '<li>$1</li>');
-    safe = safe.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
     
-    // Line breaks
-    safe = safe.replace(/\n/g, '<br>');
+    // Wrap consecutive li elements in ul
+    safe = safe.replace(/(<li>.*?<\/li>\s*)+/gs, '<ul>$&</ul>');
+    
+    // Line breaks (but not inside lists)
+    safe = safe.replace(/\n(?!<)/g, '<br>');
+    
+    // Clean up extra breaks before lists
+    safe = safe.replace(/<br>\s*<ul>/g, '<ul>');
+    safe = safe.replace(/<\/ul>\s*<br>/g, '</ul>');
     
     return safe;
   }
 
-  // Initialize on DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {

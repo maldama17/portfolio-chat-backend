@@ -95,99 +95,24 @@
       line-height: 1.6;
     }
 
-    .test-section {
-      background: white;
-      border-radius: 12px;
-      padding: 32px;
-      margin-bottom: 32px;
-      border: 1px solid #e2e8f0;
-    }
-
-    .test-section h2 {
-      font-size: 18px;
-      font-weight: 600;
-      color: #1a202c;
-      margin-bottom: 16px;
-    }
-
-    .test-section p {
-      font-size: 14px;
-      color: #4a5568;
-      line-height: 1.6;
-      margin-bottom: 16px;
-    }
-
-    .code-block {
-      background: #1a202c;
-      color: #e2e8f0;
-      padding: 16px;
-      border-radius: 8px;
-      font-family: 'SF Mono', Monaco, monospace;
-      font-size: 13px;
-      overflow-x: auto;
-    }
-
-    .status {
+    .status-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
+      background: #d1fae5;
+      color: #065f46;
       padding: 8px 16px;
       border-radius: 20px;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 500;
+      margin-top: 24px;
     }
 
     .status-dot {
       width: 8px;
       height: 8px;
-      border-radius: 50%;
-    }
-
-    .status-pending {
-      background: #fef3c7;
-      color: #92400e;
-    }
-
-    .status-pending .status-dot {
-      background: #f59e0b;
-    }
-
-    .status-ready {
-      background: #d1fae5;
-      color: #065f46;
-    }
-
-    .status-ready .status-dot {
       background: #10b981;
-    }
-
-    .checklist {
-      list-style: none;
-    }
-
-    .checklist li {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 12px 0;
-      border-bottom: 1px solid #e2e8f0;
-      font-size: 14px;
-      color: #4a5568;
-    }
-
-    .checklist li:last-child {
-      border-bottom: none;
-    }
-
-    .check-icon {
-      flex-shrink: 0;
-      width: 20px;
-      height: 20px;
-      border: 2px solid #e2e8f0;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      border-radius: 50%;
     }
 
     footer {
@@ -214,60 +139,10 @@
   <main class="main-content">
     <div class="hero">
       <h1>MichaelLLM Test Page</h1>
-      <p>This page simulates your Webflow portfolio to test the chat widget locally.</p>
-    </div>
-
-    <div class="test-section">
-      <h2>Setup Status</h2>
-      <p>Complete these steps to get the widget working:</p>
-      
-      <ul class="checklist">
-        <li>
-          <span class="check-icon">1</span>
-          <div>
-            <strong>Deploy backend to Vercel</strong><br>
-            Push this repo to GitHub, import to Vercel, add environment variables
-          </div>
-        </li>
-        <li>
-          <span class="check-icon">2</span>
-          <div>
-            <strong>Update the endpoint in widget/embed.html</strong><br>
-            Replace <code>YOUR-VERCEL-URL</code> with your actual Vercel URL
-          </div>
-        </li>
-        <li>
-          <span class="check-icon">3</span>
-          <div>
-            <strong>Fill in prompts/knowledge.md</strong><br>
-            Add your bio, projects, and contact info
-          </div>
-        </li>
-        <li>
-          <span class="check-icon">4</span>
-          <div>
-            <strong>Test the widget</strong><br>
-            Click "Chat with AI" button above to open the panel
-          </div>
-        </li>
-      </ul>
-    </div>
-
-    <div class="test-section">
-      <h2>Your Vercel Endpoint</h2>
-      <p>After deploying, your endpoint will look like:</p>
-      <div class="code-block">
-        https://portfolio-chat-backend-xxx.vercel.app/api/chat
-      </div>
-    </div>
-
-    <div class="test-section">
-      <h2>Test Commands</h2>
-      <p>Test your endpoint from the terminal:</p>
-      <div class="code-block">
-curl -X POST https://YOUR-URL.vercel.app/api/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message":"What projects has Michael worked on?"}'
+      <p>Click "Chat with AI" to test the updated widget with typewriter animation.</p>
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        Widget Ready
       </div>
     </div>
   </main>
@@ -276,7 +151,7 @@ curl -X POST https://YOUR-URL.vercel.app/api/chat \
     MichaelLLM Widget Test Environment
   </footer>
 
-  <!-- Include the widget (same code that goes in Webflow) -->
+  <!-- WIDGET CODE BELOW - Same as widget/embed.html -->
   <style>
 /* MichaelLLM Widget Styles */
 :root {
@@ -286,28 +161,14 @@ curl -X POST https://YOUR-URL.vercel.app/api/chat \
   --mllm-text: #1A202C;
   --mllm-text-light: #718096;
   --mllm-border: #E2E8F0;
-  --mllm-user-bg: #EDF2F7;
-  --mllm-bot-bg: #FFFFFF;
+  --mllm-user-bg: #F7F7F7;
   --mllm-width: 400px;
   --mllm-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --mllm-coral: #E07B67;
 }
 
 #mllm-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-  z-index: 9998;
-}
-
-#mllm-overlay.mllm-open {
-  opacity: 1;
-  visibility: visible;
+  display: none;
 }
 
 #mllm-panel {
@@ -331,7 +192,6 @@ curl -X POST https://YOUR-URL.vercel.app/api/chat \
   transform: translateX(0);
 }
 
-/* Push main content when panel opens */
 body.mllm-panel-open {
   margin-right: var(--mllm-width);
   transition: margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -350,7 +210,6 @@ body {
   }
 }
 
-/* Header */
 .mllm-header {
   display: flex;
   align-items: center;
@@ -363,11 +222,11 @@ body {
 .mllm-header-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .mllm-title {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--mllm-text);
   letter-spacing: 0.5px;
@@ -415,88 +274,106 @@ body {
   visibility: visible;
 }
 
+.mllm-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mllm-refresh-btn,
 .mllm-close-btn {
   background: none;
   border: none;
   cursor: pointer;
   color: var(--mllm-text-light);
-  padding: 8px;
+  padding: 6px;
   display: flex;
   align-items: center;
   border-radius: 6px;
-  transition: background 0.2s, color 0.2s;
+  transition: color 0.2s;
 }
 
+.mllm-refresh-btn:hover,
 .mllm-close-btn:hover {
-  background: var(--mllm-user-bg);
   color: var(--mllm-text);
 }
 
-/* Messages Area */
 .mllm-messages {
   flex: 1;
   overflow-y: auto;
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .mllm-welcome {
-  text-align: center;
   padding: 20px 0;
 }
 
 .mllm-welcome-title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--mllm-text);
-  margin-bottom: 8px;
+  margin-bottom: 24px;
 }
 
-.mllm-welcome-sub {
-  font-size: 14px;
-  color: var(--mllm-text-light);
-}
-
-/* Seed Prompts */
 .mllm-seeds {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 16px;
+  gap: 4px;
 }
 
 .mllm-seed-btn {
   background: none;
-  border: 1px solid var(--mllm-border);
-  border-radius: 8px;
-  padding: 12px 16px;
+  border: none;
+  padding: 8px 0;
   text-align: left;
   font-size: 14px;
-  color: var(--mllm-text);
+  color: var(--mllm-text-light);
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   line-height: 1.4;
+  transition: color 0.2s;
+  position: relative;
 }
 
 .mllm-seed-btn:hover {
-  border-color: var(--mllm-accent);
-  background: var(--mllm-user-bg);
+  color: var(--mllm-text);
 }
 
 .mllm-seed-arrow {
   color: var(--mllm-text-light);
   flex-shrink: 0;
-  margin-top: 2px;
+  font-size: 14px;
 }
 
-/* Message Bubbles */
+.mllm-seed-btn:hover .mllm-seed-arrow {
+  color: var(--mllm-text);
+}
+
+.mllm-hover-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--mllm-coral);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.mllm-seed-btn:hover .mllm-hover-dot,
+.mllm-followup-btn:hover .mllm-hover-dot {
+  opacity: 1;
+  transform: scale(1);
+}
+
 .mllm-message {
-  max-width: 90%;
+  max-width: 100%;
   animation: mllm-fade-in 0.3s ease;
 }
 
@@ -507,38 +384,65 @@ body {
 
 .mllm-message-user {
   align-self: flex-end;
+  max-width: 85%;
 }
 
 .mllm-message-bot {
   align-self: flex-start;
 }
 
-.mllm-bubble {
-  padding: 12px 16px;
-  border-radius: 16px;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
 .mllm-message-user .mllm-bubble {
   background: var(--mllm-user-bg);
   color: var(--mllm-text);
-  border-bottom-right-radius: 4px;
+  padding: 10px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  line-height: 1.5;
+  display: inline-block;
 }
 
 .mllm-message-bot .mllm-bubble {
-  background: var(--mllm-bot-bg);
   color: var(--mllm-text);
-  border: 1px solid var(--mllm-border);
-  border-bottom-left-radius: 4px;
+  font-size: 14px;
+  line-height: 1.7;
+  padding: 0;
 }
 
-/* Follow-ups */
+.mllm-message-bot .mllm-bubble.mllm-typing-active {
+  mask-image: linear-gradient(to right, #000 85%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, #000 85%, transparent 100%);
+}
+
+.mllm-message-bot .mllm-bubble strong {
+  font-weight: 600;
+}
+
+.mllm-message-bot .mllm-bubble ul {
+  margin: 8px 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.mllm-message-bot .mllm-bubble li {
+  position: relative;
+  padding-left: 16px;
+  margin-bottom: 6px;
+}
+
+.mllm-message-bot .mllm-bubble li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--mllm-text);
+  font-weight: bold;
+}
+
 .mllm-followups {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-top: 12px;
+  gap: 4px;
+  margin-top: 16px;
+  padding-top: 8px;
 }
 
 .mllm-followup-btn {
@@ -546,12 +450,12 @@ body {
   border: none;
   padding: 8px 0;
   text-align: left;
-  font-size: 13px;
-  color: var(--mllm-accent);
+  font-size: 14px;
+  color: var(--mllm-text-light);
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   transition: color 0.2s;
 }
 
@@ -560,21 +464,21 @@ body {
 }
 
 .mllm-followup-arrow {
-  font-size: 12px;
+  font-size: 14px;
+  flex-shrink: 0;
 }
 
-/* Typing Indicator */
 .mllm-typing {
   display: flex;
   gap: 4px;
-  padding: 16px;
+  padding: 8px 0;
   align-items: center;
 }
 
 .mllm-typing-dot {
   width: 8px;
   height: 8px;
-  background: var(--mllm-text-light);
+  background: var(--mllm-coral);
   border-radius: 50%;
   animation: mllm-bounce 1.4s infinite ease-in-out both;
 }
@@ -588,10 +492,8 @@ body {
   40% { transform: scale(1); opacity: 1; }
 }
 
-/* Rate Limit Message */
 .mllm-rate-limit {
   background: #FEF3C7;
-  border: 1px solid #F59E0B;
   border-radius: 12px;
   padding: 16px;
   text-align: center;
@@ -609,59 +511,57 @@ body {
   color: #B45309;
 }
 
-/* Input Area */
 .mllm-input-area {
-  padding: 16px 20px;
-  border-top: 1px solid var(--mllm-border);
+  padding: 16px 20px 24px;
   flex-shrink: 0;
 }
 
 .mllm-input-wrapper {
   display: flex;
-  gap: 10px;
-  align-items: flex-end;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--mllm-border);
+  padding-bottom: 8px;
 }
 
 .mllm-input {
   flex: 1;
-  border: 1px solid var(--mllm-border);
-  border-radius: 12px;
-  padding: 12px 16px;
+  border: none;
+  padding: 8px 0;
   font-size: 14px;
   font-family: inherit;
   resize: none;
-  min-height: 44px;
+  min-height: 24px;
   max-height: 120px;
   outline: none;
-  transition: border-color 0.2s;
+  background: transparent;
+  color: var(--mllm-text);
 }
 
-.mllm-input:focus {
-  border-color: var(--mllm-accent);
+.mllm-input::placeholder {
+  color: var(--mllm-text-light);
 }
 
 .mllm-input:disabled {
-  background: var(--mllm-user-bg);
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .mllm-send-btn {
-  background: var(--mllm-primary);
+  background: none;
   border: none;
-  border-radius: 10px;
-  width: 44px;
-  height: 44px;
+  padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: white;
-  transition: background 0.2s, transform 0.1s;
+  color: var(--mllm-text-light);
+  transition: color 0.2s, transform 0.1s;
   flex-shrink: 0;
 }
 
 .mllm-send-btn:hover:not(:disabled) {
-  background: var(--mllm-accent);
+  color: var(--mllm-text);
 }
 
 .mllm-send-btn:active:not(:disabled) {
@@ -669,29 +569,19 @@ body {
 }
 
 .mllm-send-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.3;
   cursor: not-allowed;
-}
-
-.mllm-footer {
-  text-align: center;
-  padding: 8px 20px 16px;
-  font-size: 11px;
-  color: var(--mllm-text-light);
 }
 </style>
 
-<!-- Overlay for closing panel -->
 <div id="mllm-overlay" onclick="toggleMichaelLLM()"></div>
 
-<!-- Chat Panel -->
 <div id="mllm-panel">
-  <!-- Header -->
   <div class="mllm-header">
     <div class="mllm-header-left">
       <span class="mllm-title">MICHAELLLM</span>
       <button class="mllm-info-btn" aria-label="Info">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"></circle>
           <line x1="12" y1="16" x2="12" y2="12"></line>
           <line x1="12" y1="8" x2="12.01" y2="8"></line>
@@ -703,20 +593,24 @@ body {
         </div>
       </button>
     </div>
-    <button class="mllm-close-btn" onclick="toggleMichaelLLM()" aria-label="Close">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <line x1="18" y1="6" x2="6" y2="18"></line>
-        <line x1="6" y1="6" x2="18" y2="18"></line>
-      </svg>
-    </button>
+    <div class="mllm-header-right">
+      <button class="mllm-refresh-btn" onclick="mllmReset()" aria-label="Reset conversation">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+      </button>
+      <button class="mllm-close-btn" onclick="toggleMichaelLLM()" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
   </div>
 
-  <!-- Messages -->
-  <div class="mllm-messages" id="mllm-messages">
-    <!-- Content injected by JS -->
-  </div>
+  <div class="mllm-messages" id="mllm-messages"></div>
 
-  <!-- Input -->
   <div class="mllm-input-area">
     <div class="mllm-input-wrapper">
       <textarea 
@@ -725,18 +619,15 @@ body {
         placeholder="Ask about Michael..."
         rows="1"
         onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();mllmSend();}"
+        oninput="this.style.height='24px';this.style.height=this.scrollHeight+'px';"
       ></textarea>
       <button class="mllm-send-btn" id="mllm-send-btn" onclick="mllmSend()" aria-label="Send">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="22" y1="2" x2="11" y2="13"></line>
-          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          <line x1="12" y1="19" x2="12" y2="5"></line>
+          <polyline points="5 12 12 5 19 12"></polyline>
         </svg>
       </button>
     </div>
-  </div>
-
-  <div class="mllm-footer">
-    Powered by AI • May contain inaccuracies
   </div>
 </div>
 
@@ -744,16 +635,8 @@ body {
 (function() {
   'use strict';
 
-  // ==========================================================================
-  // CONFIGURATION - UPDATE THIS!
-  // ==========================================================================
-  
-  // REPLACE WITH YOUR VERCEL URL AFTER DEPLOYMENT
-  const ENDPOINT = 'https://YOUR-VERCEL-URL.vercel.app/api/chat';
-  
-  // ==========================================================================
-  // SEED PROMPTS
-  // ==========================================================================
+  const ENDPOINT = 'https://portfolio-chat-backend.vercel.app/api/chat';
+  const TYPING_SPEED = 6;
   
   const SEED_PROMPTS = [
     "What are the 2–3 projects you're most proud of, and why?",
@@ -778,10 +661,6 @@ body {
     "What's the best way to contact you?"
   ];
 
-  // ==========================================================================
-  // STATE
-  // ==========================================================================
-  
   const RATE_LIMIT_KEY = 'mllm_rate_limit';
   const SESSION_KEY = 'mllm_session';
   const HISTORY_KEY = 'mllm_history';
@@ -790,13 +669,10 @@ body {
 
   let isOpen = false;
   let isLoading = false;
+  let isTyping = false;
   let history = [];
   let sessionId = '';
   let rateLimitData = { count: 0, windowStart: 0 };
-
-  // ==========================================================================
-  // INITIALIZATION
-  // ==========================================================================
 
   function init() {
     sessionId = localStorage.getItem(SESSION_KEY);
@@ -807,12 +683,8 @@ body {
 
     try {
       const savedHistory = localStorage.getItem(HISTORY_KEY);
-      if (savedHistory) {
-        history = JSON.parse(savedHistory);
-      }
-    } catch (e) {
-      history = [];
-    }
+      if (savedHistory) history = JSON.parse(savedHistory);
+    } catch (e) { history = []; }
 
     try {
       const savedRate = localStorage.getItem(RATE_LIMIT_KEY);
@@ -822,16 +694,10 @@ body {
           rateLimitData = { count: 0, windowStart: Date.now() };
         }
       }
-    } catch (e) {
-      rateLimitData = { count: 0, windowStart: Date.now() };
-    }
+    } catch (e) { rateLimitData = { count: 0, windowStart: Date.now() }; }
 
     renderMessages();
   }
-
-  // ==========================================================================
-  // TOGGLE PANEL
-  // ==========================================================================
 
   window.toggleMichaelLLM = function() {
     isOpen = !isOpen;
@@ -842,7 +708,7 @@ body {
       panel.classList.add('mllm-open');
       overlay.classList.add('mllm-open');
       document.body.classList.add('mllm-panel-open');
-      document.getElementById('mllm-input').focus();
+      setTimeout(() => document.getElementById('mllm-input').focus(), 300);
     } else {
       panel.classList.remove('mllm-open');
       overlay.classList.remove('mllm-open');
@@ -850,17 +716,13 @@ body {
     }
   };
 
-  window.openMichaelLLM = function() {
-    if (!isOpen) toggleMichaelLLM();
+  window.openMichaelLLM = function() { if (!isOpen) toggleMichaelLLM(); };
+  window.closeMichaelLLM = function() { if (isOpen) toggleMichaelLLM(); };
+  window.mllmReset = function() {
+    history = [];
+    localStorage.removeItem(HISTORY_KEY);
+    renderMessages();
   };
-
-  window.closeMichaelLLM = function() {
-    if (isOpen) toggleMichaelLLM();
-  };
-
-  // ==========================================================================
-  // RENDERING
-  // ==========================================================================
 
   function renderMessages() {
     const container = document.getElementById('mllm-messages');
@@ -879,9 +741,8 @@ body {
 
     let html = '';
     history.forEach((msg, idx) => {
-      html += renderMessageBubble(msg.role, msg.content);
-      
-      if (msg.role === 'assistant' && idx === history.length - 1 && msg.followups) {
+      html += renderMessageBubble(msg.role, msg.content, msg.id);
+      if (msg.role === 'assistant' && idx === history.length - 1 && msg.followups && !isTyping) {
         html += renderFollowups(msg.followups);
       }
     });
@@ -893,30 +754,26 @@ body {
   function renderWelcome() {
     const shuffled = [...SEED_PROMPTS].sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, 3);
-
     return `
       <div class="mllm-welcome">
         <div class="mllm-welcome-title">Hey there, I'm MichaelLLM.</div>
-        <div class="mllm-welcome-sub">Ask me anything about Michael's work.</div>
-      </div>
-      <div class="mllm-seeds">
-        ${selected.map(prompt => `
-          <button class="mllm-seed-btn" onclick="mllmAsk('${escapeHtml(prompt)}')">
-            <span class="mllm-seed-arrow">↳</span>
-            <span>${escapeHtml(prompt)}</span>
-          </button>
-        `).join('')}
+        <div class="mllm-seeds">
+          ${selected.map(prompt => `
+            <button class="mllm-seed-btn" onclick="mllmAsk('${escapeHtml(prompt)}')">
+              <span class="mllm-seed-arrow">↳</span>
+              <span>${escapeHtml(prompt)}</span>
+              <span class="mllm-hover-dot"></span>
+            </button>
+          `).join('')}
+        </div>
       </div>
     `;
   }
 
-  function renderMessageBubble(role, content) {
+  function renderMessageBubble(role, content, id) {
     const className = role === 'user' ? 'mllm-message-user' : 'mllm-message-bot';
-    return `
-      <div class="mllm-message ${className}">
-        <div class="mllm-bubble">${formatMessage(content)}</div>
-      </div>
-    `;
+    const messageId = id || 'msg-' + Math.random().toString(36).substr(2, 9);
+    return `<div class="mllm-message ${className}" id="${messageId}"><div class="mllm-bubble">${formatMessage(content)}</div></div>`;
   }
 
   function renderFollowups(followups) {
@@ -927,6 +784,7 @@ body {
           <button class="mllm-followup-btn" onclick="mllmAsk('${escapeHtml(f)}', true)">
             <span class="mllm-followup-arrow">↳</span>
             <span>${escapeHtml(f)}</span>
+            <span class="mllm-hover-dot"></span>
           </button>
         `).join('')}
       </div>
@@ -934,32 +792,54 @@ body {
   }
 
   function renderTypingIndicator() {
-    return `
-      <div class="mllm-message mllm-message-bot">
-        <div class="mllm-typing">
-          <div class="mllm-typing-dot"></div>
-          <div class="mllm-typing-dot"></div>
-          <div class="mllm-typing-dot"></div>
-        </div>
-      </div>
-    `;
+    return `<div class="mllm-message mllm-message-bot" id="mllm-typing-indicator"><div class="mllm-typing"><div class="mllm-typing-dot"></div><div class="mllm-typing-dot"></div><div class="mllm-typing-dot"></div></div></div>`;
   }
 
   function renderRateLimitMessage(minutes) {
-    return `
-      <div class="mllm-rate-limit">
-        <div class="mllm-rate-limit-title">Taking a quick break!</div>
-        <div class="mllm-rate-limit-text">
-          Hey! I appreciate the curiosity, but I need a quick breather. 
-          Come back in about ${minutes} minutes and we can keep chatting!
-        </div>
-      </div>
-    `;
+    return `<div class="mllm-rate-limit"><div class="mllm-rate-limit-title">Taking a quick break!</div><div class="mllm-rate-limit-text">Hey! I appreciate the curiosity, but I need a quick breather. Come back in about ${minutes} minutes and we can keep chatting!</div></div>`;
   }
 
-  // ==========================================================================
-  // API CALLS
-  // ==========================================================================
+  async function typewriterEffect(element, text, followups) {
+    isTyping = true;
+    const formattedText = formatMessage(text);
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = formattedText;
+    const plainText = tempDiv.textContent || tempDiv.innerText;
+    
+    element.innerHTML = '';
+    element.classList.add('mllm-typing-active');
+    let currentIndex = 0;
+    
+    return new Promise((resolve) => {
+      function typeNextChar() {
+        if (currentIndex < plainText.length) {
+          const char = plainText[currentIndex];
+          element.textContent += char;
+          currentIndex++;
+          
+          const container = document.getElementById('mllm-messages');
+          container.scrollTop = container.scrollHeight;
+          
+          let delay = TYPING_SPEED;
+          if (['.', '!', '?'].includes(char)) delay = TYPING_SPEED * 3;
+          else if ([',', ';', ':'].includes(char)) delay = TYPING_SPEED * 1.5;
+          
+          setTimeout(typeNextChar, delay);
+        } else {
+          element.classList.remove('mllm-typing-active');
+          element.innerHTML = formattedText;
+          isTyping = false;
+          
+          if (followups && followups.length > 0) {
+            const messageDiv = element.closest('.mllm-message');
+            if (messageDiv) messageDiv.insertAdjacentHTML('afterend', renderFollowups(followups));
+          }
+          resolve();
+        }
+      }
+      typeNextChar();
+    });
+  }
 
   window.mllmAsk = function(prompt, isFollowup = false) {
     document.getElementById('mllm-input').value = prompt;
@@ -967,13 +847,14 @@ body {
   };
 
   window.mllmSend = async function(clickedSuggestion = null) {
-    if (isLoading || isRateLimited()) return;
+    if (isLoading || isTyping || isRateLimited()) return;
 
     const input = document.getElementById('mllm-input');
     const message = input.value.trim();
     if (!message) return;
 
     input.value = '';
+    input.style.height = '24px';
 
     if (rateLimitData.count === 0 || Date.now() - rateLimitData.windowStart > RATE_LIMIT_WINDOW) {
       rateLimitData = { count: 1, windowStart: Date.now() };
@@ -982,10 +863,7 @@ body {
     }
     localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(rateLimitData));
 
-    if (isRateLimited()) {
-      renderMessages();
-      return;
-    }
+    if (isRateLimited()) { renderMessages(); return; }
 
     history.push({ role: 'user', content: message });
     renderMessages();
@@ -1010,55 +888,46 @@ body {
       });
 
       const data = await response.json();
+      const typingIndicator = document.getElementById('mllm-typing-indicator');
+      if (typingIndicator) typingIndicator.remove();
 
       if (response.ok) {
-        history.push({ 
-          role: 'assistant', 
-          content: data.reply,
-          followups: data.followups || []
-        });
+        const msgId = 'msg-' + Math.random().toString(36).substr(2, 9);
+        history.push({ role: 'assistant', content: data.reply, followups: data.followups || [], id: msgId });
         localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(-20)));
+
+        container.innerHTML += `<div class="mllm-message mllm-message-bot" id="${msgId}"><div class="mllm-bubble"></div></div>`;
+        const bubbleEl = document.querySelector(`#${msgId} .mllm-bubble`);
+        await typewriterEffect(bubbleEl, data.reply, data.followups);
       } else {
         if (data.error === 'rate_limited') {
           rateLimitData.count = MAX_MESSAGES + 1;
           localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(rateLimitData));
         }
-        history.push({ 
-          role: 'assistant', 
-          content: data.message || 'Sorry, something went wrong. Please try again!',
-          followups: []
-        });
+        history.push({ role: 'assistant', content: data.message || 'Sorry, something went wrong. Please try again!', followups: [] });
+        renderMessages();
       }
     } catch (e) {
       console.error('MichaelLLM error:', e);
-      history.push({ 
-        role: 'assistant', 
-        content: "Hmm, I'm having trouble connecting. Please check your internet and try again!",
-        followups: []
-      });
+      const typingIndicator = document.getElementById('mllm-typing-indicator');
+      if (typingIndicator) typingIndicator.remove();
+      history.push({ role: 'assistant', content: "Hmm, I'm having trouble connecting. Please check your internet and try again!", followups: [] });
+      renderMessages();
     }
 
     isLoading = false;
     disableInput(false);
-    renderMessages();
+    container.scrollTop = container.scrollHeight;
   };
 
-  // ==========================================================================
-  // UTILITIES
-  // ==========================================================================
-
   function isRateLimited() {
-    if (Date.now() - rateLimitData.windowStart > RATE_LIMIT_WINDOW) {
-      return false;
-    }
+    if (Date.now() - rateLimitData.windowStart > RATE_LIMIT_WINDOW) return false;
     return rateLimitData.count >= MAX_MESSAGES;
   }
 
   function disableInput(disabled) {
-    const input = document.getElementById('mllm-input');
-    const btn = document.getElementById('mllm-send-btn');
-    input.disabled = disabled;
-    btn.disabled = disabled;
+    document.getElementById('mllm-input').disabled = disabled;
+    document.getElementById('mllm-send-btn').disabled = disabled;
   }
 
   function escapeHtml(str) {
@@ -1071,9 +940,12 @@ body {
     let safe = escapeHtml(content);
     safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     safe = safe.replace(/__(.*?)__/g, '<strong>$1</strong>');
+    safe = safe.replace(/^\d+\.\s+(.*)$/gm, '<li>$1</li>');
     safe = safe.replace(/^[\-\*]\s+(.*)$/gm, '<li>$1</li>');
-    safe = safe.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
-    safe = safe.replace(/\n/g, '<br>');
+    safe = safe.replace(/(<li>.*?<\/li>\s*)+/gs, '<ul>$&</ul>');
+    safe = safe.replace(/\n(?!<)/g, '<br>');
+    safe = safe.replace(/<br>\s*<ul>/g, '<ul>');
+    safe = safe.replace(/<\/ul>\s*<br>/g, '</ul>');
     return safe;
   }
 
@@ -1082,7 +954,6 @@ body {
   } else {
     init();
   }
-
 })();
 </script>
 
