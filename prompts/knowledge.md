@@ -101,9 +101,30 @@
 
 ---
 
-## Fun Facts (Optional)
+## Fun Facts & Personality
 
-<!-- These help the bot handle casual questions warmly -->
-- [Fun fact about yourself]
-- [A hobby or interest]
-- [Something unexpected about you]
+<!-- Fill these in so the bot can answer the fun prompts! -->
+
+**Outside of design, I...**
+[What do you do for fun? Hobbies, interests, side projects?]
+
+**Something unexpected about me:**
+[A surprising fact that shows personality]
+
+**My hot take on design:**
+[A spicy opinion you have about the industry]
+
+**Currently listening to:**
+[What's on your playlist? Artists, genres, podcasts?]
+
+**Coffee or tea?**
+[Your order, how you take it]
+
+**Currently learning:**
+[A skill you're picking up outside work]
+
+**If I wasn't a designer:**
+[What would you be doing instead?]
+
+**Random things that make me laugh:**
+[Anything - shows you're human!]
