@@ -806,70 +806,20 @@ body {
       }
     } catch (e) { rateLimitData = { count: 0, windowStart: Date.now() }; }
 
-    // #region agent log - Monitor DOM mutations
     const container = document.getElementById('mllm-messages');
     if (container) {
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
-            fetch('http://127.0.0.1:7242/ingest/a62104e9-8334-4d95-bd7d-ceabeb890573',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test.html:715',message:'DOM mutation: nodes removed',data:{removedCount:mutation.removedNodes.length,currentChildren:container.children.length,historyLength:history.length,stackTrace:new Error().stack?.split('\n').slice(0,5).join('|')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-          }
-        });
-      });
-      observer.observe(container, { childList: true, subtree: true });
-    }
-    // #endregion
-
-    // #region agent log - Detect wheel events on body (should NOT fire when scrolling in panel)
-    document.body.addEventListener('wheel', function(e) {
-      const panel = document.getElementById('mllm-panel');
-      const isOverPanel = panel && panel.contains(e.target);
-      if (isOverPanel) {
-        fetch('http://127.0.0.1:7242/ingest/a62104e9-8334-4d95-bd7d-ceabeb890573',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test.html:body-wheel',message:'Wheel event LEAKED to body from panel',data:{target:e.target.className,deltaY:e.deltaY},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H9'})}).catch(()=>{});
-      }
-    }, { passive: true });
-    // #endregion
-
-    // #region agent log - Add scroll and wheel event handlers
-    if (container) {
-      // Monitor scroll events
-      container.addEventListener('scroll', function() {
-        fetch('http://127.0.0.1:7242/ingest/a62104e9-8334-4d95-bd7d-ceabeb890573',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test.html:scroll-event',message:'Scroll event fired',data:{scrollTop:container.scrollTop,scrollHeight:container.scrollHeight,clientHeight:container.clientHeight},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
-      }, { passive: true });
-      
-      // Monitor wheel events and prevent body scroll leak
+      // Prevent body scroll leak when scrolling within messages container
       container.addEventListener('wheel', function(e) {
-        const beforeScroll = container.scrollTop;
         const canScroll = container.scrollHeight > container.clientHeight;
         const atTop = container.scrollTop === 0;
         const atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight;
         
-        fetch('http://127.0.0.1:7242/ingest/a62104e9-8334-4d95-bd7d-ceabeb890573',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test.html:wheel-handler',message:'Wheel handler fired',data:{deltaY:e.deltaY,scrollTop:beforeScroll,scrollHeight:container.scrollHeight,clientHeight:container.clientHeight,canScroll,atTop,atBottom},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H8,H9'})}).catch(()=>{});
-        
-        // CRITICAL FIX: Only stop propagation to body, don't preventDefault
-        // This allows native scroll to work on the container
-        if (canScroll) {
-          if ((e.deltaY < 0 && atTop) || (e.deltaY > 0 && atBottom)) {
-            // At bounds - let it bubble to body for overscroll
-          } else {
-            // Within scrollable area - stop propagation to body but allow native scroll
-            e.stopPropagation();
-            // Don't call preventDefault() - we want the container to scroll natively
-          }
-        } else {
-          // Can't scroll - let body handle it
+        // Only stop propagation when scrolling within bounds (not at edges)
+        if (canScroll && !((e.deltaY < 0 && atTop) || (e.deltaY > 0 && atBottom))) {
+          e.stopPropagation();
         }
-        
-        // Check if scroll actually changed
-        setTimeout(() => {
-          const afterScroll = container.scrollTop;
-          if (beforeScroll === afterScroll && canScroll && !atTop && !atBottom) {
-            fetch('http://127.0.0.1:7242/ingest/a62104e9-8334-4d95-bd7d-ceabeb890573',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test.html:wheel-no-scroll',message:'Wheel event did not cause scroll',data:{beforeScroll,afterScroll,deltaY:e.deltaY,canScroll},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2,H5'})}).catch(()=>{});
-          }
-        }, 50);
-      }, { passive: true }); // Changed to passive: true to allow native scroll
+      }, { passive: true });
     }
-    // #endregion
 
     renderMessages();
   }
@@ -884,15 +834,6 @@ body {
       overlay.classList.add('mllm-open');
       document.body.classList.add('mllm-panel-open');
       setTimeout(() => document.getElementById('mllm-input').focus(), 300);
-      // #region agent log
-      setTimeout(() => {
-        const msgs = document.getElementById('mllm-messages');
-        const panelEl = document.getElementById('mllm-panel');
-        const styles = window.getComputedStyle(msgs);
-        const panelStyles = window.getComputedStyle(panelEl);
-        fetch('http://127.0.0.1:7242/ingest/a62104e9-8334-4d95-bd7d-ceabeb890573',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test.html:toggle',message:'Panel opened - checking scroll setup',data:{messagesHeight:msgs.offsetHeight,messagesScrollHeight:msgs.scrollHeight,messagesOverflow:styles.overflowY,panelHeight:panelEl.offsetHeight,panelComputedHeight:panelStyles.height,canScroll:msgs.scrollHeight>msgs.offsetHeight},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H3,H4,H5'})}).catch(()=>{});
-      }, 500);
-      // #endregion
     } else {
       panel.classList.remove('mllm-open');
       overlay.classList.remove('mllm-open');
@@ -908,45 +849,9 @@ body {
     renderMessages();
   };
 
-  // Debug toggle: Generate 50 fake messages to test scrolling
-  window.mllmDebugToggle = function() {
-    const container = document.getElementById('mllm-messages');
-    if (!container) return;
-    
-    const isDebugMode = history.length > 20 && history[0]?.content?.includes('[DEBUG]');
-    
-    if (isDebugMode) {
-      // Clear debug messages
-      history = [];
-      localStorage.removeItem(HISTORY_KEY);
-      renderMessages();
-      console.log('Debug mode disabled - messages cleared');
-    } else {
-      // Generate 50 fake messages
-      history = [];
-      const longMessage = 'This is a debug message with enough content to force scrolling. '.repeat(20) + '[DEBUG MODE]';
-      for (let i = 0; i < 50; i++) {
-        history.push({
-          role: i % 2 === 0 ? 'user' : 'assistant',
-          content: `${i + 1}. ${longMessage} Message ${i + 1}`,
-          id: `debug-msg-${i}`
-        });
-      }
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-      renderMessages();
-      console.log('Debug mode enabled - 50 messages generated. Try scrolling now!');
-    }
-  };
-
   function renderMessages() {
-    // #region agent log
-    const stackTrace = new Error().stack;
     const container = document.getElementById('mllm-messages');
     const inner = document.getElementById('mllm-messages-inner');
-    const domBefore = inner?.children.length || 0;
-    fetch('http://127.0.0.1:7242/ingest/a62104e9-8334-4d95-bd7d-ceabeb890573',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test.html:renderMessages',message:'renderMessages called',data:{historyLength:history.length,historySnapshot:JSON.stringify(history),isTyping,isLoading,domBefore,stackTrace:stackTrace?.split('\n').slice(0,5).join('|')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
-    
     if (!container || !inner) return;
     
     if (isRateLimited()) {
@@ -959,9 +864,6 @@ body {
     if (history.length === 0) {
       container.classList.add('mllm-empty');
       inner.innerHTML = renderWelcome();
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/a62104e9-8334-4d95-bd7d-ceabeb890573',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test.html:renderMessages-welcome',message:'renderMessages: rendered welcome (history empty)',data:{historyLength:0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
       return;
     }
 
@@ -976,14 +878,6 @@ body {
     });
 
     inner.innerHTML = html;
-    // #region agent log
-    const domAfter = inner.children.length;
-    fetch('http://127.0.0.1:7242/ingest/a62104e9-8334-4d95-bd7d-ceabeb890573',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test.html:renderMessages-rebuild',message:'renderMessages: DOM rebuilt',data:{historyLength:history.length,domBefore,domAfter,htmlLength:html.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
-    // #region agent log - scroll debug
-    const scrollStyles = window.getComputedStyle(container);
-    fetch('http://127.0.0.1:7242/ingest/a62104e9-8334-4d95-bd7d-ceabeb890573',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test.html:scroll-check',message:'Scroll dimensions check',data:{offsetHeight:container.offsetHeight,scrollHeight:container.scrollHeight,clientHeight:container.clientHeight,overflowY:scrollStyles.overflowY,canScroll:container.scrollHeight>container.clientHeight},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H4,H5'})}).catch(()=>{});
-    // #endregion
     container.scrollTop = container.scrollHeight;
   }
 
@@ -1037,10 +931,6 @@ body {
   }
 
   async function typewriterEffect(element, text, followups) {
-    // #region agent log
-    const inner = document.getElementById('mllm-messages-inner');
-    fetch('http://127.0.0.1:7242/ingest/a62104e9-8334-4d95-bd7d-ceabeb890573',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test.html:typewriter-start',message:'typewriterEffect started',data:{textLength:text.length,hasFollowups:!!followups,historyLength:history.length,domCount:inner?.children.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-    // #endregion
     isTyping = true;
     const formattedText = formatMessage(text);
     
@@ -1111,18 +1001,10 @@ body {
           element.classList.remove('mllm-typing-active');
           element.innerHTML = formattedText;
           isTyping = false;
-          // #region agent log
-          const inner = document.getElementById('mllm-messages-inner');
-          const domCount = inner?.children.length;
-          fetch('http://127.0.0.1:7242/ingest/a62104e9-8334-4d95-bd7d-ceabeb890573',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test.html:typewriter-complete',message:'typewriterEffect completed',data:{historyLength:history.length,domCount,hasFollowups:!!followups,textContainsUserExp:/:user experience:/i.test(text)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-          // #endregion
           
           if (followups && followups.length > 0) {
             const messageDiv = element.closest('.mllm-message');
             if (messageDiv) messageDiv.insertAdjacentHTML('afterend', renderFollowups(followups));
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/a62104e9-8334-4d95-bd7d-ceabeb890573',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test.html:followups-inserted',message:'followups inserted after typewriter',data:{followupsCount:followups.length,domCountAfter:inner?.children.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-            // #endregion
           }
           resolve();
         }
@@ -1156,9 +1038,6 @@ body {
     if (isRateLimited()) { renderMessages(); return; }
 
     history.push({ role: 'user', content: message });
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/a62104e9-8334-4d95-bd7d-ceabeb890573',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test.html:884',message:'user message added to history',data:{historyLength:history.length,message,historySnapshot:JSON.stringify(history)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-    // #endregion
     // Don't call renderMessages() here - it would rebuild DOM and conflict with innerHTML += later
     // Instead, add user message directly to DOM
     const container = document.getElementById('mllm-messages');
@@ -1198,33 +1077,17 @@ body {
       if (response.ok) {
         const msgId = 'msg-' + Math.random().toString(36).substr(2, 9);
         history.push({ role: 'assistant', content: data.reply, followups: data.followups || [], id: msgId });
-        // #region agent log
-        const domBeforeAdd = container.children.length;
-        fetch('http://127.0.0.1:7242/ingest/a62104e9-8334-4d95-bd7d-ceabeb890573',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test.html:912',message:'assistant message added to history',data:{historyLength:history.length,replyLength:data.reply.length,replyContainsUserExp:/:user experience:/i.test(data.reply),domBeforeAdd},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-        // #endregion
         localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(-20)));
 
-        container.innerHTML += `<div class="mllm-message mllm-message-bot" id="${msgId}"><div class="mllm-bubble"></div></div>`;
-        // #region agent log
-        const domAfterAdd = container.children.length;
-        fetch('http://127.0.0.1:7242/ingest/a62104e9-8334-4d95-bd7d-ceabeb890573',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test.html:915',message:'message bubble added via innerHTML +=',data:{domBeforeAdd,domAfterAdd,msgId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-        // #endregion
+        inner.innerHTML += `<div class="mllm-message mllm-message-bot" id="${msgId}"><div class="mllm-bubble"></div></div>`;
         const bubbleEl = document.querySelector(`#${msgId} .mllm-bubble`);
         await typewriterEffect(bubbleEl, data.reply, data.followups);
-        // #region agent log
-        const domAfterTypewriter = container.children.length;
-        const historyAfterTypewriter = history.length;
-        fetch('http://127.0.0.1:7242/ingest/a62104e9-8334-4d95-bd7d-ceabeb890573',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test.html:917',message:'after typewriterEffect await',data:{domAfterTypewriter,historyAfterTypewriter,historySnapshot:JSON.stringify(history)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-        // #endregion
       } else {
         if (data.error === 'rate_limited') {
           rateLimitData.count = MAX_MESSAGES + 1;
           localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(rateLimitData));
         }
         history.push({ role: 'assistant', content: data.message || 'Sorry, something went wrong. Please try again!', followups: [] });
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a62104e9-8334-4d95-bd7d-ceabeb890573',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test.html:923',message:'error response: calling renderMessages',data:{error:data.error,historyLength:history.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-        // #endregion
         renderMessages();
       }
     } catch (e) {
@@ -1232,9 +1095,6 @@ body {
       const typingIndicator = document.getElementById('mllm-typing-indicator');
       if (typingIndicator) typingIndicator.remove();
       history.push({ role: 'assistant', content: "Hmm, I'm having trouble connecting. Please check your internet and try again!", followups: [] });
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/a62104e9-8334-4d95-bd7d-ceabeb890573',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'test.html:930',message:'catch block: calling renderMessages',data:{error:String(e),historyLength:history.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
       renderMessages();
     }
 
