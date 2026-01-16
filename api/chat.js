@@ -155,7 +155,8 @@ async function logToSupabase(data) {
         page_url: data.page_url,
         user_message: data.user_message,
         assistant_message: data.assistant_message,
-        clicked_suggestion: data.clicked_suggestion || null
+        clicked_suggestion: data.clicked_suggestion || null,
+        selected_context: data.selected_context || null
       })
     });
   } catch (e) {
@@ -245,7 +246,7 @@ export default async function handler(req, res) {
   
   try {
     const body = req.body || {};
-    const { message, history, session_id, page_url, clicked_suggestion } = body;
+    const { message, history, session_id, page_url, clicked_suggestion, selected_context } = body;
     
     // Validate message
     if (!message || typeof message !== 'string') {
@@ -287,7 +288,7 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         messages: messages,
         max_tokens: MAX_TOKENS,
         temperature: 0.7
@@ -315,7 +316,8 @@ export default async function handler(req, res) {
       page_url: page_url || 'unknown',
       user_message: sanitizedMessage,
       assistant_message: reply,
-      clicked_suggestion: clicked_suggestion || null
+      clicked_suggestion: clicked_suggestion || null,
+      selected_context: selected_context || null
     });
     
     // Add warning if approaching rate limit

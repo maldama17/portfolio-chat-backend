@@ -1,0 +1,8 @@
+---
+alwaysApply: true
+---
+# WORKFLOW
+Pick ONE lead role based on the task. Then do a short review pass from the other roles:
+- PM review: does it meet acceptance criteria / scope?
+- Eng review: any bugs, missing tests, edge cases?
+- Design review: states, a11y, consistency, AAA compliance, user flows are logical, actions sensible?

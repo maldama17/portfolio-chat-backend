@@ -1,12 +1,3 @@
-<!-- 
-  MichaelLLM Chat Widget
-  
-  INSTALLATION:
-  1. Copy everything below into Webflow: Project Settings > Custom Code > Footer Code
-  2. Add a button in your nav with: onclick="toggleMichaelLLM()"
-  3. Publish your Webflow site
--->
-
 <link href="https://fonts.googleapis.com/css2?family=Funnel+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Text&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -23,9 +14,23 @@
   --mllm-width: 400px;
   --mllm-shadow: none;
   --mllm-coral: #E07B67;
+  
+  /* Text Selection Feature - Customization */
+  /* Floating "Add to Chat" Button */
+  --mllm-selection-btn-bg: #2D3748;
+  --mllm-selection-btn-text: #FFFFFF;
+  --mllm-selection-btn-hover-bg: #1A202C;
+  --mllm-selection-btn-radius: 20px;
+  --mllm-selection-btn-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  
+  /* Context Chip (above input) */
+  --mllm-selection-chip-bg: #FAFAFA;
+  --mllm-selection-chip-border: #E2E8F0;
+  --mllm-selection-chip-text: #4A5568;
+  --mllm-selection-chip-bar: #CBD5E0;
+  --mllm-selection-chip-radius: 8px;
 }
 
-/* Overlay removed - user can interact with page while chat is open */
 #mllm-overlay {
   display: none;
 }
@@ -46,7 +51,6 @@
   flex-direction: column;
   font-family: 'Funnel Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   letter-spacing: -0.01em;
-  /* CRITICAL: Prevent panel from scrolling - only messages should scroll */
   overflow: hidden;
   min-height: 0;
 }
@@ -70,7 +74,6 @@
   }
 }
 
-/* Push main content when panel opens */
 body.mllm-panel-open {
   margin-right: var(--mllm-width);
   transition: margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -89,7 +92,6 @@ body {
   }
 }
 
-/* Header */
 .mllm-header {
   display: flex;
   align-items: center;
@@ -195,22 +197,18 @@ body {
   color: var(--mllm-text);
 }
 
-/* Messages Area */
 .mllm-messages {
-  /* CRITICAL FIX: flex: 1 1 0 with height:0 forces container to only take available space */
   flex: 1 1 0;
-  height: 0; /* Start at 0, flex-grow fills available space */
-  min-height: 0; /* CRITICAL: Allows flex child to shrink below content size, enabling proper scrollHeight calculation */
+  height: 0;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
-  /* CRITICAL FIX: Remove display:flex from scroll container - use block instead */
   display: block;
   position: relative;
-  /* Scrollbar styling - always visible, darker on hover */
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.4) transparent;
 }
@@ -219,7 +217,6 @@ body {
   scrollbar-color: rgba(0, 0, 0, 0.6) transparent;
 }
 
-/* Webkit scrollbar (Chrome, Safari, Edge) - always visible */
 .mllm-messages::-webkit-scrollbar {
   width: 10px;
   -webkit-appearance: none;
@@ -272,7 +269,6 @@ body {
   font-family: 'DM Serif Text', serif;
 }
 
-/* Seed Prompts - Arrow style */
 .mllm-seeds {
   display: flex;
   flex-direction: column;
@@ -309,7 +305,6 @@ body {
   color: var(--mllm-text);
 }
 
-/* Hover dot animation */
 .mllm-hover-dot {
   width: 8px;
   height: 8px;
@@ -328,7 +323,6 @@ body {
   transform: scale(1);
 }
 
-/* Message Bubbles */
 .mllm-message {
   max-width: 100%;
   animation: mllm-fade-in 0.3s ease;
@@ -348,7 +342,6 @@ body {
   align-self: flex-start;
 }
 
-/* User bubble - rounded pill style */
 .mllm-message-user .mllm-bubble {
   background: var(--mllm-user-bg);
   color: var(--mllm-text);
@@ -359,7 +352,6 @@ body {
   display: inline-block;
 }
 
-/* Bot message - no bubble, just text */
 .mllm-message-bot .mllm-bubble {
   color: var(--mllm-text);
   font-size: 14px;
@@ -367,7 +359,6 @@ body {
   padding: 0;
 }
 
-/* Typing blur effect */
 .mllm-message-bot .mllm-bubble.mllm-typing-active {
   mask-image: linear-gradient(to right, #000 85%, transparent 100%);
   -webkit-mask-image: linear-gradient(to right, #000 85%, transparent 100%);
@@ -397,7 +388,6 @@ body {
   font-weight: bold;
 }
 
-/* Follow-ups - minimal arrow style with hover dot */
 .mllm-followups {
   display: flex;
   flex-direction: column;
@@ -429,7 +419,6 @@ body {
   flex-shrink: 0;
 }
 
-/* Typing Indicator */
 .mllm-typing {
   display: flex;
   gap: 4px;
@@ -454,7 +443,6 @@ body {
   40% { transform: scale(1); opacity: 1; }
 }
 
-/* Rate Limit Message */
 .mllm-rate-limit {
   background: #FEF3C7;
   border-radius: 12px;
@@ -474,7 +462,6 @@ body {
   color: #B45309;
 }
 
-/* Input Area - Clean minimal style */
 .mllm-input-area {
   padding: 16px 20px 24px;
   flex-shrink: 0;
@@ -539,10 +526,151 @@ body {
   opacity: 0.3;
   cursor: not-allowed;
 }
+
+#mllm-selection-button {
+  position: fixed;
+  background: var(--mllm-selection-btn-bg);
+  color: var(--mllm-selection-btn-text);
+  border: none;
+  border-radius: var(--mllm-selection-btn-radius);
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Funnel Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  cursor: pointer;
+  z-index: 10000;
+  box-shadow: var(--mllm-selection-btn-shadow);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, visibility 0.15s ease, background 0.2s ease, transform 0.1s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+#mllm-selection-button.mllm-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+#mllm-selection-button:hover {
+  background: var(--mllm-selection-btn-hover-bg);
+}
+
+#mllm-selection-button:active {
+  transform: scale(0.95);
+}
+
+#mllm-selection-button:focus {
+  outline: 2px solid var(--mllm-coral);
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  #mllm-selection-button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 10px 18px;
+    font-size: 14px;
+  }
+}
+
+.mllm-context-area {
+  padding: 12px 20px 0;
+  flex-shrink: 0;
+  display: none;
+  animation: mllm-context-slide-in 0.2s ease-out;
+}
+
+.mllm-context-area.mllm-visible {
+  display: block;
+}
+
+@keyframes mllm-context-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mllm-context-chip {
+  background: var(--mllm-selection-chip-bg);
+  border: 1px solid var(--mllm-selection-chip-border);
+  border-radius: var(--mllm-selection-chip-radius);
+  padding: 10px 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  position: relative;
+}
+
+.mllm-context-icon {
+  width: 3px;
+  background: var(--mllm-selection-chip-bar);
+  flex-shrink: 0;
+  border-radius: 2px;
+  align-self: stretch;
+}
+
+.mllm-context-text {
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--mllm-selection-chip-text);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+
+.mllm-context-clear {
+  background: none;
+  border: none;
+  color: var(--mllm-text-light);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+  flex-shrink: 0;
+  transition: color 0.2s ease, transform 0.1s ease;
+  margin-top: -2px;
+}
+
+.mllm-context-clear:hover {
+  color: var(--mllm-text);
+}
+
+.mllm-context-clear:active {
+  transform: scale(0.9);
+}
+
+.mllm-context-clear:focus {
+  outline: 2px solid var(--mllm-coral);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 </style>
 
 <!-- Overlay for closing panel -->
 <div id="mllm-overlay" onclick="toggleMichaelLLM()"></div>
+
+<!-- Floating "Add to Chat" Button -->
+<button id="mllm-selection-button" aria-label="Add selected text to chat">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+  </svg>
+  <span id="mllm-selection-button-text">Add to chat</span>
+</button>
 
 <!-- Chat Panel -->
 <div id="mllm-panel">
@@ -584,6 +712,15 @@ body {
     </div>
   </div>
 
+  <!-- Context Chip (Selected Text) -->
+  <div class="mllm-context-area" id="mllm-context-area" aria-live="polite" role="status">
+    <div class="mllm-context-chip">
+      <div class="mllm-context-icon"></div>
+      <span class="mllm-context-text" id="mllm-context-text"></span>
+      <button class="mllm-context-clear" id="mllm-context-clear" aria-label="Clear selected context">×</button>
+    </div>
+  </div>
+
   <!-- Input -->
   <div class="mllm-input-area">
     <div class="mllm-input-wrapper">
@@ -615,6 +752,16 @@ body {
   
   const ENDPOINT = 'https://portfolio-chat-backend.vercel.app/api/chat';
   const TYPING_SPEED = 6; // ms per character (very fast)
+  
+  // Text Selection Feature Configuration
+  const SELECTION_CONFIG = {
+    minLength: 10,              // Minimum characters to show button
+    maxLength: 500,             // Maximum characters to capture
+    buttonAutoHideDelay: 5000,  // Auto-hide button after 5 seconds (0 = never)
+    excludeSelectors: 'nav, footer, #mllm-panel, .no-select', // Elements to ignore
+    buttonText: 'Add to chat',  // Floating button label
+    buttonPosition: 'top-right' // Position relative to selection
+  };
   
   // ==========================================================================
   // SEED PROMPTS
@@ -672,6 +819,11 @@ body {
   let history = [];
   let sessionId = '';
   let rateLimitData = { count: 0, windowStart: 0 };
+  
+  // Text Selection State
+  let contextSelection = null;
+  let selectionButtonTimeout = null;
+  let currentSelection = null;
 
   // ==========================================================================
   // INITIALIZATION
@@ -721,6 +873,195 @@ body {
     }
 
     renderMessages();
+    initTextSelection();
+  }
+
+  // ==========================================================================
+  // TEXT SELECTION FEATURE
+  // ==========================================================================
+
+  function initTextSelection() {
+    const selectionButton = document.getElementById('mllm-selection-button');
+    const contextArea = document.getElementById('mllm-context-area');
+    const contextClear = document.getElementById('mllm-context-clear');
+    
+    if (!selectionButton || !contextArea || !contextClear) return;
+    
+    // Update button text from config
+    const buttonTextEl = document.getElementById('mllm-selection-button-text');
+    if (buttonTextEl) {
+      buttonTextEl.textContent = SELECTION_CONFIG.buttonText;
+    }
+    
+    // Listen for text selection
+    document.addEventListener('mouseup', handleTextSelection);
+    document.addEventListener('touchend', handleTextSelection);
+    
+    // Click handler for floating button
+    selectionButton.addEventListener('click', addSelectionToContext);
+    
+    // Clear button handler
+    contextClear.addEventListener('click', clearContext);
+    
+    // Keyboard handlers
+    document.addEventListener('keydown', handleSelectionKeyboard);
+  }
+  
+  function handleTextSelection(e) {
+    // Don't interfere if clicking on our UI elements
+    if (e.target.closest('#mllm-selection-button') || e.target.closest('#mllm-panel')) {
+      return;
+    }
+    
+    setTimeout(() => {
+      const selection = window.getSelection();
+      const text = selection.toString().trim();
+      
+      // Validate selection
+      if (!text || text.length < SELECTION_CONFIG.minLength || text.length > SELECTION_CONFIG.maxLength) {
+        hideSelectionButton();
+        return;
+      }
+      
+      // Check if selection is within excluded elements
+      const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+      if (!range) {
+        hideSelectionButton();
+        return;
+      }
+      
+      const container = range.commonAncestorContainer;
+      const element = container.nodeType === 3 ? container.parentElement : container;
+      
+      const closestExcluded = element.closest(SELECTION_CONFIG.excludeSelectors);      
+      if (closestExcluded) {
+        hideSelectionButton();
+        return;
+      }
+      
+      // Valid selection - show button
+      currentSelection = {
+        text: text,
+        range: range.cloneRange()
+      };
+      
+      showSelectionButton(range);
+    }, 10);
+  }
+  
+  function showSelectionButton(range) {
+    const button = document.getElementById('mllm-selection-button');
+    if (!button) {
+      return;
+    }
+    
+    const rect = range.getBoundingClientRect();
+    const buttonWidth = 120; // Approximate button width
+    const buttonHeight = 40;
+    const padding = 8;
+    
+    // Position based on config
+    let top, left;
+    
+    if (SELECTION_CONFIG.buttonPosition === 'top-left') {
+      top = rect.top + window.scrollY - buttonHeight - padding;
+      left = rect.left + window.scrollX;
+    } else if (SELECTION_CONFIG.buttonPosition === 'bottom-right') {
+      top = rect.bottom + window.scrollY + padding;
+      left = rect.right + window.scrollX - buttonWidth;
+    } else { // default: top-right
+      top = rect.top + window.scrollY - buttonHeight - padding;
+      left = rect.right + window.scrollX - buttonWidth;
+    }
+    
+    // Keep button within viewport
+    const maxLeft = window.innerWidth - buttonWidth - padding;
+    const maxTop = window.innerHeight + window.scrollY - buttonHeight - padding;
+    
+    left = Math.max(padding, Math.min(left, maxLeft));
+    top = Math.max(window.scrollY + padding, Math.min(top, maxTop));
+    
+    button.style.top = top + 'px';
+    button.style.left = left + 'px';
+    button.classList.add('mllm-visible');
+    
+    // Auto-hide after delay (if configured)
+    if (SELECTION_CONFIG.buttonAutoHideDelay > 0) {
+      clearTimeout(selectionButtonTimeout);
+      selectionButtonTimeout = setTimeout(() => {
+        hideSelectionButton();
+      }, SELECTION_CONFIG.buttonAutoHideDelay);
+    }
+  }
+  
+  function hideSelectionButton() {
+    const button = document.getElementById('mllm-selection-button');
+    if (button) {
+      button.classList.remove('mllm-visible');
+    }
+    clearTimeout(selectionButtonTimeout);
+  }
+  
+  function addSelectionToContext() {
+    if (!currentSelection || !currentSelection.text) return;
+    
+    contextSelection = currentSelection.text;
+    
+    // Update context chip
+    const contextText = document.getElementById('mllm-context-text');
+    const contextArea = document.getElementById('mllm-context-area');
+    
+    if (contextText) {
+      contextText.textContent = contextSelection;
+    }
+    
+    if (contextArea) {
+      contextArea.classList.add('mllm-visible');
+    }
+    
+    // Hide floating button
+    hideSelectionButton();
+    
+    // Clear browser selection
+    window.getSelection().removeAllRanges();
+    currentSelection = null;
+    
+    // Open chat if not already open
+    if (!isOpen) {
+      window.toggleMichaelLLM();
+    }
+  }
+  
+  function clearContext() {
+    contextSelection = null;
+    
+    const contextArea = document.getElementById('mllm-context-area');
+    
+    if (contextArea) {
+      contextArea.classList.remove('mllm-visible');
+    }
+  }
+  
+  function handleSelectionKeyboard(e) {
+    const button = document.getElementById('mllm-selection-button');
+    const contextArea = document.getElementById('mllm-context-area');
+    
+    // Escape key: dismiss floating button or clear context
+    if (e.key === 'Escape') {
+      if (button && button.classList.contains('mllm-visible')) {
+        hideSelectionButton();
+        e.preventDefault();
+      } else if (contextArea && contextArea.classList.contains('mllm-visible')) {
+        clearContext();
+        e.preventDefault();
+      }
+    }
+    
+    // Enter key on floating button
+    if (e.key === 'Enter' && document.activeElement === button) {
+      addSelectionToContext();
+      e.preventDefault();
+    }
   }
 
   // ==========================================================================
@@ -1009,8 +1350,15 @@ body {
     if (isLoading || isTyping || isRateLimited()) return;
 
     const input = document.getElementById('mllm-input');
-    const message = input.value.trim();
+    let message = input.value.trim();
     if (!message) return;
+
+    // Prepend context if exists
+    let fullMessage = message;
+    const hasContext = contextSelection !== null;
+    if (hasContext) {
+      fullMessage = `Context: "${contextSelection}"\n\nQuestion: ${message}`;
+    }
 
     input.value = '';
     input.style.height = '24px';
@@ -1028,7 +1376,7 @@ body {
       return;
     }
 
-    // Add user message to history
+    // Add user message to history (display message only, not context)
     history.push({ role: 'user', content: message });
     // Don't call renderMessages() here - it would rebuild DOM and conflict with innerHTML += later
     // Instead, add user message directly to DOM
@@ -1043,6 +1391,11 @@ body {
     const userMsgId = 'msg-' + Math.random().toString(36).substr(2, 9);
     inner.innerHTML += renderMessageBubble('user', message, userMsgId);
     scrollToBottom(container);
+    
+    // Clear context after displaying user message
+    if (hasContext) {
+      clearContext();
+    }
 
     // Show typing indicator
     isLoading = true;
@@ -1055,11 +1408,12 @@ body {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message,
+          message: fullMessage,
           history: history.slice(-10).map(m => ({ role: m.role, content: m.content })),
           session_id: sessionId,
           page_url: window.location.href,
-          clicked_suggestion: clickedSuggestion
+          clicked_suggestion: clickedSuggestion,
+          selected_context: hasContext ? contextSelection : null
         })
       });
 
@@ -1184,4 +1538,40 @@ body {
   }
 
 })();
+</script>
+
+// JS for Custom Button Event for Widget
+<script>
+// Wait for page to load and widget to initialize
+window.addEventListener('DOMContentLoaded', function() {
+  // Function to check if widget is ready and attach button
+  function attachChatButton() {
+    const chatButton = document.getElementById('chat-trigger');
+    
+    if (!chatButton) {
+      console.error('Element with ID "chat-trigger" not found.');
+      return;
+    }
+    
+    // Check if widget function exists
+    if (typeof window.toggleMichaelLLM !== 'function') {
+      console.warn('toggleMichaelLLM not ready yet, retrying...');
+      // Retry after 200ms if not ready
+      setTimeout(attachChatButton, 200);
+      return;
+    }
+    
+    // Widget is ready, attach click handler
+    chatButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      window.toggleMichaelLLM();
+    });
+    
+    console.log('✅ Chat button initialized successfully');
+  }
+  
+  // Start checking after small delay
+  setTimeout(attachChatButton, 100);
+});
 </script>

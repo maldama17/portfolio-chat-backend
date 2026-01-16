@@ -1,0 +1,29 @@
+---
+name: working-agreement
+description: This document is to be read before writing or changing code:
+---
+
+# Overview
+
+## Working Agreement (Verification-First)  
+Before writing or changing code: 
+1) State how you will verify the change (exact commands + manual checks). 
+2) Write the test / verification step first when feasible. 
+3) Implement the smallest change needed. 
+4) Run verification and iterate until everything passes.  
+
+### Verification (required) 
+- Always run: typecheck + tests (or the closest equivalents in this repo). 
+- If UI-related: include a browser verification checklist (what pages, what states, what interactions). 
+- If API-related: include a curl/postman style request + expected response.
+- If no tests exist for the change: add at least one minimal test OR document why it’s not feasible and provide an alternate verification step.  
+
+### Definition of Done 
+- All verification steps pass. 
+- No secrets in code (use env vars). 
+- No `any` types in TypeScript. 
+- Commit message includes: what changed + how it was verified.  
+
+### Commands 
+- Prefer `bun` (JS) / `uv` (Python) and project scripts from package.json. 
+- Do not commit without running verification.

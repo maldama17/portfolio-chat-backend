@@ -1,0 +1,29 @@
+---
+name: default-contract
+description: Default Contract
+---
+
+# Project Rules (Global)
+
+## Verification-first
+- Before coding, state exactly how you will verify the change (commands + manual checks).
+- Implement the smallest change that satisfies the goal.
+- Run verification and iterate until it passes.
+
+## Quality gates
+- No secrets in code. Use environment variables.
+- No `any` in TypeScript (use proper types).
+- Avoid hacks that fight the framework. Prefer native patterns.
+
+## Change hygiene
+- Keep diffs small and scoped. One objective per PR/commit.
+- If behavior changes, update docs/README and any relevant comments.
+
+## Logging & observability
+- Add lightweight logs for new flows when helpful; remove noisy logs before merge.
+- When adding tracking, document the event name + payload shape.
+
+## Accessibility + UX basics
+- Don’t break keyboard navigation.
+- Use semantic HTML, labels, and aria attributes where needed.
+- Respect
