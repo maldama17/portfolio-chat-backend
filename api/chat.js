@@ -10,6 +10,8 @@ import { join } from 'path';
 
 const ALLOWED_ORIGINS = [
   'https://aldama.webflow.io',
+  'https://michaelaldama.com',
+  'https://www.michaelaldama.com',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
   'null' // For local file:// testing
