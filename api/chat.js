@@ -167,36 +167,74 @@ async function logToSupabase(data) {
 }
 
 // -----------------------------------------------------------------------------
-// Openers, Chainers, Loopers — driven by user's message (project vs non-project opener)
-// 1. Show 3 openers initially.
-// 2a. If project-related opener chosen → 2 chainers + 1 looper (learn about another project).
-// 2b. If non-project opener chosen → 3 more openers (no chainers).
+// Openers, Chainers, Loopers (context-aware follow-ups)
 // -----------------------------------------------------------------------------
 
-const PROJECT_OPENER_KEYWORDS = [
-  'project', 'projects', 'case study', 'onboarding', 'delivery', 'rithum', 'tenant',
-  'worked on', 'built', 'designed', 'shipped', 'launched', 'featured', 'role at'
+const STEERING_PHRASES = [
+  'anything you\'d like to know about his projects',
+  'questions about michael\'s design work',
+  'design work'
 ];
 
-const PROJECT_OPENERS = [
-  "What projects have you worked on?",
-  "Tell me about your onboarding project.",
-  "Tell me about your delivery solution work.",
+const PROJECT_KEYWORDS = [
+  'project', 'case study', 'onboarding', 'delivery', 'rithum', 'tenant',
+  'worked on', 'built', 'designed', 'shipped', 'launched', 'that project'
+];
+
+/**
+ * Classifies conversation state from history, current message, and assistant reply.
+ * @param {Array<{role: string, content: string}>} history - Recent conversation (user/assistant pairs).
+ * @param {string} message - Current user message.
+ * @param {string} reply - Assistant's reply text.
+ * @returns {'no_topic' | 'in_project' | 'wrapping'}
+ */
+function classifyConversationState(history, message, reply) {
+  const replyLower = (reply || '').toLowerCase();
+  const messageLower = (message || '').toLowerCase();
+  const hasSteering = STEERING_PHRASES.some(p => replyLower.includes(p));
+  const textHasProject = (text) => PROJECT_KEYWORDS.some(kw => text.toLowerCase().includes(kw));
+
+  if (hasSteering) return 'no_topic';
+  if (textHasProject(reply) || textHasProject(message)) return 'in_project';
+  const lastUserContent = history.filter(m => m.role === 'user').pop()?.content || '';
+  if (textHasProject(lastUserContent)) return 'in_project';
+
+  const totalTurns = history.length;
+  if (totalTurns >= 4) return 'wrapping';
+  return 'no_topic';
+}
+
+// Openers: start a chain (mirror frontend WORK_PROMPTS + FUN_PROMPTS)
+const OPENERS = [
   "What are the 2–3 projects you're most proud of, and why?",
   "If I only read one case study, which should it be?",
-  "Tell me about a project where the constraints were brutal."
-];
-
-const NON_PROJECT_OPENERS = [
-  "What skills do you bring as a designer?",
   "What kind of problems do you love solving most?",
+  "Tell me about a project where the constraints were brutal.",
+  "What's a project where you simplified something complex?",
   "Walk me through your design process from kickoff to launch.",
+  "How do you define the problem before jumping into solutions?",
+  "How do you decide what to prototype vs what to ship?",
+  "What does 'good UX' mean to you in practice?",
+  "How do you approach design systems and consistency?",
+  "How do you run user research when time is limited?",
+  "Tell me about a time research changed your direction.",
+  "How do you make decisions with imperfect information?",
+  "What metrics do you use to judge success after launch?",
   "How do you work with engineers day-to-day?",
   "How do you influence product strategy without formal authority?",
-  "What's the best way to contact you?"
+  "What kinds of roles are you looking for right now?",
+  "What's the best way to contact you?",
+  "What do you do outside of design?",
+  "What's something unexpected about you?",
+  "What's your hot take on design?",
+  "What's on your playlist right now?",
+  "Coffee or tea? And how do you take it?",
+  "What's a skill you're currently learning?",
+  "What's the last thing that made you laugh?",
+  "If you weren't a designer, what would you be?"
 ];
 
-// Chainers: deepen current project (never show after a generic opener). Exclude "What's next?"
+// Chainers: progress dialogue on current topic (exclude "What's next?")
 const CHAINERS = [
   "What problem were you solving and for whom?",
   "What research did you do?",
@@ -217,80 +255,41 @@ const CHAINERS = [
   "What was your role specifically?"
 ];
 
-// Loopers: escape hatch to another project (shown with chainers when in project flow)
+// Loopers: return to openers / start new topic
 const LOOPERS = [
-  "Want to hear about another project?",
   "Anything else about his projects?",
+  "Want to hear about another project?",
   "What else can I tell you about Michael?"
 ];
 
-function normalizeForMatch(text) {
-  return (text || '').trim().toLowerCase().replace(/\s+/g, ' ');
-}
-
-function messageIsOneOf(userMessage, list) {
-  const normalized = normalizeForMatch(userMessage);
-  return list.some(x => normalizeForMatch(x) === normalized);
-}
-
-/** True if the user's message is a project-related opener (so we show chainers + looper). List-first so chip clicks are deterministic. */
-function isProjectRelatedOpener(userMessage) {
-  if (!userMessage || typeof userMessage !== 'string') return false;
-
-  if (messageIsOneOf(userMessage, PROJECT_OPENERS)) return true;
-  if (messageIsOneOf(userMessage, NON_PROJECT_OPENERS)) return false;
-
-  const lower = userMessage.trim().toLowerCase();
-  if (PROJECT_OPENER_KEYWORDS.some(kw => lower.includes(kw))) return true;
-  const projectOpenerStarts = [
-    'tell me about the ', 'tell me about a project', 'which project',
-    'what are the 2', 'if i only read one case study',
-    "what's a project", 'walk me through', 'what problem were you', 'what was the outcome'
-  ];
-  return projectOpenerStarts.some(phrase => lower.startsWith(phrase) || lower.includes(phrase));
-}
-
-/** True if the user's message is a chainer (e.g. "How did you work with engineering?") — keep project flow and show 2 chainers + 1 looper. */
-function messageIsChainer(userMessage) {
-  if (!userMessage || typeof userMessage !== 'string') return false;
-  const normalized = normalizeForMatch(userMessage);
-  return CHAINERS.some(c => normalizeForMatch(c) === normalized);
-}
-
-/** Exclude suggestions that duplicate the user's last message to avoid infinite loop (e.g. "Tell me more about that" → don't suggest it again). */
-function excludeUserMessage(pool, userMessage) {
-  if (!userMessage || !pool.length) return pool;
-  const normalized = normalizeForMatch(userMessage);
-  return pool.filter(s => normalizeForMatch(s) !== normalized);
-}
-
-function shuffleAndTake(arr, n, excludeMessage) {
-  let pool = excludeMessage ? excludeUserMessage([...arr], excludeMessage) : [...arr];
-  if (pool.length === 0) pool = [...arr];
-  for (let i = pool.length - 1; i > 0; i--) {
+function shuffleAndTake(arr, n) {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [pool[i], pool[j]] = [pool[j], pool[i]];
+    [copy[i], copy[j]] = [copy[j], copy[i]];
   }
-  return pool.slice(0, n);
+  return copy.slice(0, n);
 }
 
 /**
-     * Follow-ups based on what the user just asked.
-     * - Project-related opener or a chainer (e.g. "How did you work with engineering?") → 2 chainers + 1 looper (escape hatch).
-     * - Non-project opener → 3 openers.
-     * Never suggests the same question the user just asked (avoids "Tell me more" loop).
-     */
+ * Returns 3 follow-up suggestions based on conversation state.
+ * no_topic / steered → openers; in_project → chainers; wrapping → loopers + openers.
+ */
 function selectFollowups(reply, history, message, clickedSuggestion) {
-  const userMessage = message || clickedSuggestion || '';
-  const inProject = isProjectRelatedOpener(userMessage) || messageIsChainer(userMessage);
+  const state = classifyConversationState(history || [], message || '', reply || '');
 
-  if (inProject) {
-    const chainers = shuffleAndTake(CHAINERS, 2, userMessage);
-    const loopers = shuffleAndTake(LOOPERS, 1);
-    return shuffleAndTake([...chainers, ...loopers], 3);
+  if (state === 'in_project') {
+    return shuffleAndTake(CHAINERS, 3);
   }
-  return shuffleAndTake(NON_PROJECT_OPENERS, 3, userMessage);
-} 
+  if (state === 'wrapping') {
+    const loopers = shuffleAndTake(LOOPERS, 2);
+    const openers = shuffleAndTake(OPENERS, 1);
+    return shuffleAndTake([...loopers, ...openers], 3);
+  }
+  return shuffleAndTake(OPENERS, 3);
+}
+
+export { classifyConversationState, selectFollowups, OPENERS, CHAINERS, LOOPERS };
 
 // =============================================================================
 // MAIN HANDLER
@@ -397,9 +396,8 @@ export default async function handler(req, res) {
     const openaiData = await openaiResponse.json();
     const reply = openaiData.choices?.[0]?.message?.content || "Sorry, I couldn't generate a response.";
     
-    // Follow-ups: project opener → 2 chainers + 1 looper; non-project opener → 3 openers. Never repeat user's last message.
+    // Generate follow-up suggestions (openers / chainers / loopers by state)
     const followups = selectFollowups(reply, conversationHistory, sanitizedMessage, clicked_suggestion);
-    
     
     // Log to Supabase (async, don't block response)
     logToSupabase({

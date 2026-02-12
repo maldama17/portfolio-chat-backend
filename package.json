@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "description": "MichaelLLM - Portfolio chat backend with OpenAI integration",
-  "engines": {
-    "node": ">=18"
-  }
+  "engines": { "node": ">=18" },
+  "scripts": { "verify": "node scripts/verify-followups.js" }
 }
