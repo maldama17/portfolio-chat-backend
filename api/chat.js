@@ -166,43 +166,130 @@ async function logToSupabase(data) {
   }
 }
 
-function selectFollowups(reply, isProjectMentioned) {
-  // Project-specific follow-ups
-  const projectFollowups = [
-    "What problem were you solving and for whom?",
-    "What research did you do?",
-    "What alternatives did you explore?",
-    "How did you iterate on the design?",
-    "How did you work with engineering?",
-    "What did stakeholders care about most?",
-    "What metrics moved after launch?",
-    "What were the biggest risks?",
-    "What would you improve with more time?"
-  ];
-  
-  // Universal follow-ups
-  const universalFollowups = [
-    "Tell me more about that.",
-    "What was the most challenging part?",
-    "What tradeoffs did you make?",
-    "What was the outcome?",
-    "How did you measure success?",
-    "What did you learn?",
-    "What would you do differently?",
-    "What was your role specifically?",
-    "What's next?"
-  ];
-  
-  // Detect if response mentions a project
-  const projectKeywords = ['project', 'case study', 'worked on', 'built', 'designed', 'shipped', 'launched'];
-  const mentionsProject = isProjectMentioned || projectKeywords.some(kw => reply.toLowerCase().includes(kw));
-  
-  const pool = mentionsProject ? projectFollowups : universalFollowups;
-  
-  // Return 3 random follow-ups
-  const shuffled = pool.sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, 3);
+// -----------------------------------------------------------------------------
+// Openers, Chainers, Loopers (context-aware follow-ups)
+// -----------------------------------------------------------------------------
+
+const STEERING_PHRASES = [
+  'anything you\'d like to know about his projects',
+  'questions about michael\'s design work',
+  'design work'
+];
+
+const PROJECT_KEYWORDS = [
+  'project', 'case study', 'onboarding', 'delivery', 'rithum', 'tenant',
+  'worked on', 'built', 'designed', 'shipped', 'launched', 'that project'
+];
+
+/**
+ * Classifies conversation state from history, current message, and assistant reply.
+ * @param {Array<{role: string, content: string}>} history - Recent conversation (user/assistant pairs).
+ * @param {string} message - Current user message.
+ * @param {string} reply - Assistant's reply text.
+ * @returns {'no_topic' | 'in_project' | 'wrapping'}
+ */
+function classifyConversationState(history, message, reply) {
+  const replyLower = (reply || '').toLowerCase();
+  const messageLower = (message || '').toLowerCase();
+  const hasSteering = STEERING_PHRASES.some(p => replyLower.includes(p));
+  const textHasProject = (text) => PROJECT_KEYWORDS.some(kw => text.toLowerCase().includes(kw));
+
+  if (hasSteering) return 'no_topic';
+  if (textHasProject(reply) || textHasProject(message)) return 'in_project';
+  const lastUserContent = history.filter(m => m.role === 'user').pop()?.content || '';
+  if (textHasProject(lastUserContent)) return 'in_project';
+
+  const totalTurns = history.length;
+  if (totalTurns >= 4) return 'wrapping';
+  return 'no_topic';
 }
+
+// Openers: start a chain (mirror frontend WORK_PROMPTS + FUN_PROMPTS)
+const OPENERS = [
+  "What are the 2–3 projects you're most proud of, and why?",
+  "If I only read one case study, which should it be?",
+  "What kind of problems do you love solving most?",
+  "Tell me about a project where the constraints were brutal.",
+  "What's a project where you simplified something complex?",
+  "Walk me through your design process from kickoff to launch.",
+  "How do you define the problem before jumping into solutions?",
+  "How do you decide what to prototype vs what to ship?",
+  "What does 'good UX' mean to you in practice?",
+  "How do you approach design systems and consistency?",
+  "How do you run user research when time is limited?",
+  "Tell me about a time research changed your direction.",
+  "How do you make decisions with imperfect information?",
+  "What metrics do you use to judge success after launch?",
+  "How do you work with engineers day-to-day?",
+  "How do you influence product strategy without formal authority?",
+  "What kinds of roles are you looking for right now?",
+  "What's the best way to contact you?",
+  "What do you do outside of design?",
+  "What's something unexpected about you?",
+  "What's your hot take on design?",
+  "What's on your playlist right now?",
+  "Coffee or tea? And how do you take it?",
+  "What's a skill you're currently learning?",
+  "What's the last thing that made you laugh?",
+  "If you weren't a designer, what would you be?"
+];
+
+// Chainers: progress dialogue on current topic (exclude "What's next?")
+const CHAINERS = [
+  "What problem were you solving and for whom?",
+  "What research did you do?",
+  "What alternatives did you explore?",
+  "How did you iterate on the design?",
+  "How did you work with engineering?",
+  "What did stakeholders care about most?",
+  "What metrics moved after launch?",
+  "What were the biggest risks?",
+  "What would you improve with more time?",
+  "Tell me more about that.",
+  "What was the most challenging part?",
+  "What tradeoffs did you make?",
+  "What was the outcome?",
+  "How did you measure success?",
+  "What did you learn?",
+  "What would you do differently?",
+  "What was your role specifically?"
+];
+
+// Loopers: return to openers / start new topic
+const LOOPERS = [
+  "Anything else about his projects?",
+  "Want to hear about another project?",
+  "What else can I tell you about Michael?"
+];
+
+function shuffleAndTake(arr, n) {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy.slice(0, n);
+}
+
+/**
+ * Returns 3 follow-up suggestions based on conversation state.
+ * no_topic / steered → openers; in_project → chainers; wrapping → loopers + openers.
+ */
+function selectFollowups(reply, history, message, clickedSuggestion) {
+  const state = classifyConversationState(history || [], message || '', reply || '');
+
+  if (state === 'in_project') {
+    return shuffleAndTake(CHAINERS, 3);
+  }
+  if (state === 'wrapping') {
+    const loopers = shuffleAndTake(LOOPERS, 2);
+    const openers = shuffleAndTake(OPENERS, 1);
+    return shuffleAndTake([...loopers, ...openers], 3);
+  }
+  return shuffleAndTake(OPENERS, 3);
+}
+
+export { classifyConversationState, selectFollowups, OPENERS, CHAINERS, LOOPERS };
 
 // =============================================================================
 // MAIN HANDLER
@@ -309,8 +396,8 @@ export default async function handler(req, res) {
     const openaiData = await openaiResponse.json();
     const reply = openaiData.choices?.[0]?.message?.content || "Sorry, I couldn't generate a response.";
     
-    // Generate follow-up suggestions
-    const followups = selectFollowups(reply, clicked_suggestion?.toLowerCase().includes('project'));
+    // Generate follow-up suggestions (openers / chainers / loopers by state)
+    const followups = selectFollowups(reply, conversationHistory, sanitizedMessage, clicked_suggestion);
     
     // Log to Supabase (async, don't block response)
     logToSupabase({
