@@ -166,42 +166,115 @@ async function logToSupabase(data) {
   }
 }
 
-function selectFollowups(reply, isProjectMentioned) {
-  // Project-specific follow-ups
-  const projectFollowups = [
-    "What problem were you solving and for whom?",
-    "What research did you do?",
-    "What alternatives did you explore?",
-    "How did you iterate on the design?",
-    "How did you work with engineering?",
-    "What did stakeholders care about most?",
-    "What metrics moved after launch?",
-    "What were the biggest risks?",
-    "What would you improve with more time?"
+// -----------------------------------------------------------------------------
+// Openers, Chainers, Loopers — driven by user's message (project vs non-project opener)
+// 1. Show 3 openers initially.
+// 2a. If project-related opener chosen → 2 chainers + 1 looper (learn about another project).
+// 2b. If non-project opener chosen → 3 more openers (no chainers).
+// -----------------------------------------------------------------------------
+
+const PROJECT_OPENER_KEYWORDS = [
+  'project', 'projects', 'case study', 'onboarding', 'delivery', 'rithum', 'tenant',
+  'worked on', 'built', 'designed', 'shipped', 'launched', 'featured', 'role at'
+];
+
+/** True if the user's message is a project-related opener (so we show chainers + looper). */
+function isProjectRelatedOpener(userMessage) {
+  if (!userMessage || typeof userMessage !== 'string') return false;
+  const lower = userMessage.trim().toLowerCase();
+  if (PROJECT_OPENER_KEYWORDS.some(kw => lower.includes(kw))) return true;
+  const projectOpenerStarts = [
+    'tell me about the ', 'tell me about a project', 'which project', 'what are the 2', 'if i only read one case study',
+    'what\'s a project', 'walk me through', 'what problem were you', 'what was the outcome'
   ];
-  
-  // Universal follow-ups
-  const universalFollowups = [
-    "Tell me more about that.",
-    "What was the most challenging part?",
-    "What tradeoffs did you make?",
-    "What was the outcome?",
-    "How did you measure success?",
-    "What did you learn?",
-    "What would you do differently?",
-    "What was your role specifically?",
-    "What's next?"
-  ];
-  
-  // Detect if response mentions a project
-  const projectKeywords = ['project', 'case study', 'worked on', 'built', 'designed', 'shipped', 'launched'];
-  const mentionsProject = isProjectMentioned || projectKeywords.some(kw => reply.toLowerCase().includes(kw));
-  
-  const pool = mentionsProject ? projectFollowups : universalFollowups;
-  
-  // Return 3 random follow-ups
-  const shuffled = pool.sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, 3);
+  return projectOpenerStarts.some(phrase => lower.startsWith(phrase) || lower.includes(phrase));
+}
+
+// Openers: start a chain. Refined set — "tell me about your ___", "what skills", "what projects", etc.
+const OPENERS = [
+  "What projects have you worked on?",
+  "Tell me about your onboarding project.",
+  "Tell me about your delivery solution work.",
+  "What skills do you bring as a designer?",
+  "What are the 2–3 projects you're most proud of, and why?",
+  "If I only read one case study, which should it be?",
+  "What kind of problems do you love solving most?",
+  "Tell me about a project where the constraints were brutal.",
+  "Walk me through your design process from kickoff to launch.",
+  "How do you work with engineers day-to-day?",
+  "How do you influence product strategy without formal authority?",
+  "What's the best way to contact you?",
+  "What do you do outside of design?",
+  "What's something unexpected about you?",
+  "What's on your playlist right now?",
+  "Coffee or tea? And how do you take it?"
+];
+
+// Chainers: deepen current project (never show after a generic opener). Exclude "What's next?"
+const CHAINERS = [
+  "What problem were you solving and for whom?",
+  "What research did you do?",
+  "What alternatives did you explore?",
+  "How did you iterate on the design?",
+  "How did you work with engineering?",
+  "What did stakeholders care about most?",
+  "What metrics moved after launch?",
+  "What were the biggest risks?",
+  "What would you improve with more time?",
+  "Tell me more about that.",
+  "What was the most challenging part?",
+  "What tradeoffs did you make?",
+  "What was the outcome?",
+  "How did you measure success?",
+  "What did you learn?",
+  "What would you do differently?",
+  "What was your role specifically?"
+];
+
+// Loopers: option to learn about a new project (shown with chainers when in project flow)
+const LOOPERS = [
+  "Want to hear about another project?",
+  "Anything else about his projects?",
+  "What else can I tell you about Michael?"
+];
+
+function normalizeForMatch(text) {
+  return (text || '').trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+/** Exclude suggestions that duplicate the user's last message to avoid infinite loop (e.g. "Tell me more about that" → don't suggest it again). */
+function excludeUserMessage(pool, userMessage) {
+  if (!userMessage || !pool.length) return pool;
+  const normalized = normalizeForMatch(userMessage);
+  return pool.filter(s => normalizeForMatch(s) !== normalized);
+}
+
+function shuffleAndTake(arr, n, excludeMessage) {
+  let pool = excludeMessage ? excludeUserMessage([...arr], excludeMessage) : [...arr];
+  if (pool.length === 0) pool = [...arr];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, n);
+}
+
+/**
+ * Follow-ups based on what the user just asked (opener type).
+ * - Project-related opener → 2 chainers + 1 looper.
+ * - Non-project opener → 3 openers.
+ * Never suggests the same question the user just asked (avoids "Tell me more" loop).
+ */
+function selectFollowups(reply, history, message, clickedSuggestion) {
+  const userMessage = message || clickedSuggestion || '';
+  const projectOpener = isProjectRelatedOpener(userMessage);
+
+  if (projectOpener) {
+    const chainers = shuffleAndTake(CHAINERS, 2, userMessage);
+    const loopers = shuffleAndTake(LOOPERS, 1);
+    return shuffleAndTake([...chainers, ...loopers], 3);
+  }
+  return shuffleAndTake(OPENERS, 3, userMessage);
 }
 
 // =============================================================================
@@ -309,8 +382,8 @@ export default async function handler(req, res) {
     const openaiData = await openaiResponse.json();
     const reply = openaiData.choices?.[0]?.message?.content || "Sorry, I couldn't generate a response.";
     
-    // Generate follow-up suggestions
-    const followups = selectFollowups(reply, clicked_suggestion?.toLowerCase().includes('project'));
+    // Follow-ups: project opener → 2 chainers + 1 looper; non-project opener → 3 openers. Never repeat user's last message.
+    const followups = selectFollowups(reply, conversationHistory, sanitizedMessage, clicked_suggestion);
     
     // Log to Supabase (async, don't block response)
     logToSupabase({
