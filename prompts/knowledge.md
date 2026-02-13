@@ -49,26 +49,26 @@ Always happy to connect on interesting product work.
 
 ## Featured Projects
 
-### Project 1: [Project Name]
-**The Problem:** [What problem were you solving?]
-**My Role:** [What did you specifically do?]
-**The Approach:** [How did you tackle it?]
-**The Outcome:** [What was the result/impact?]
-**Key Learning:** [What did you learn?]
+### Project 1: The Future of Onboarding
+**The Problem:** Onboarding new suppliers to our network took weeks (sometimes months), required duplicate accounts across platforms, and forced teams to repeat the same contracts, credentials, and item setup for every new retailer.
+**My Role:** Lead product designer responsible for end-to-end UX across research, flows, interaction design, and partnering with PM/Eng/Ops on scope and rollout.
+**The Approach:** Mapped the legacy onboarding journeys across platforms, interviewed internal teams, and reframed onboarding as a reusable 1:many relationship instead of 1:1 connections.
+**The Outcome:** Reduced median onboarding time from 17 to 7 days (average 30 → 8.8), cut internal setup from ~40 hours to minutes per connection, and created a scalable foundation for network certification and future open-network features.
+**Key Learning:** Realzing the amount of work that goes into getting a package delivered to your door is amazingly beautiful. Onboarding starts before the invitation is sent and tracing the entire journey was critical to the redesign. 
 
-### Project 2: [Project Name]
-**The Problem:** [What problem were you solving?]
-**My Role:** [What did you specifically do?]
-**The Approach:** [How did you tackle it?]
-**The Outcome:** [What was the result/impact?]
-**Key Learning:** [What did you learn?]
+### Project 2: Delivery Solutions — Orchestrating Fulfillment at Scale 
+**The Problem:** Retailers needed faster, more predictable delivery without sacrificing margin, but fulfillment was split across two platforms, dependent on a third-party label engine, and offered almost no unified visibility into shipment health.
+**My Role:** Own the UX for our delivery suite—defining workflows, requirements, and UI for warehouse configuration, intelligent shipping labels, and monitoring dashboards while partnering closely with data, engineering, and our 3P provider.
+**The Approach:** Teardown of both warehouse experiences & 3P system in order to understand data gaps & needs, rebuilt entire warehouse manager. Later created the self-serve label, carrier configuration tools, necessary insights & monitoring, and updated onboarding to train suppliers on key functionality. 
+**The Outcome:** Enabled 100+ suppliers < 90 days, unified warehouse solution,  enablement efforts reduced by ~40%, and helped retailers save ~10% on annual ship costs.
+**Key Learning:** Delivery “magic” only works when the plumbing is right—clean data, clear configuration, and honest visibility. If you don’t design for those three, no amount of algorithmic intelligence will feel trustworthy or get adopted.
 
-### Project 3: [Project Name]
-**The Problem:** [What problem were you solving?]
-**My Role:** [What did you specifically do?]
-**The Approach:** [How did you tackle it?]
-**The Outcome:** [What was the result/impact?]
-**Key Learning:** [What did you learn?]
+### Project 3: Modernized & Unified Reporting
+**The Problem:** Merging two diasparate insights sytems into a single, shared experience. 
+**My Role:** Lead Designer
+**The Approach:** Teardown of both applications to identify existing IA & user flows. Identified common data themes across the two applications. Replatformed Insights to a new 3P vendor. Setup connections between applications as cross platform trading. 
+**The Outcome:** Reducing costs, improving time to ship, unified data & reporting across platform. 
+**Key Learning:** Third-party insights platforms can accelerate delivery, but their interaction and IA limits show up fast in real workflows—especially when you’re consolidating experiences across apps. In our case, the vendor was chosen early for timing/cost reasons, before we’d fully mapped the interaction depth we’d need, so once the contract was signed the constraints were real. The lesson: evaluate extensibility—filters, drilldowns, and the navigation model—as seriously as cost and time-to-ship.
 
 ---
 
@@ -105,7 +105,7 @@ I try to ask ‘what not to design’ early and often, because it keeps the work
 Always interested in learn about any fun projects or ideas. 
 
 **Social/Links:**
-- LinkedIn: [URL]
+- LinkedIn: [https://www.linkedin.com/in/michael-aldama-a5545553]
 
 ---
 
@@ -121,14 +121,23 @@ Trying various recipies, finding the best chinese restaurant
 Testing out Cursor and various LLMs in order to tinker around on various side projects. 
 
 **Something unexpected about me:**
-That I'm not Adam Driver. Kidding but surprisingly, I've gotten that more times than I can remember. 
-
 I'd say competing in triathlons. I haven't found that to be quite common amongst people I've met in daily life. I've completed my first 70.3 after completing my first marathon 6 months prior. I'm currently towards completing a full 140.6 ironman. 
 
 
 **Currently listening to:**
 [What's on your playlist? Artists, genres, podcasts?]
-Working hours ususally consists of piano, malte marten or nujabes type playlists at ~20%. 
+Working hours usually consists of two Spotify playlists: Peaceful Piano & Malte Marten.
+
+Genres: Liquid Drum & Bass, Piano, Classical, Post Hardcore, Pop Punk, Rock, Hip Hop, and a healthy dose of Chinese music!
+
+Usually Listening to:
+- Néer - Beginnings
+- Fred again.. - Hannah (the sun)
+- People Under the Stairs - Montego Slay
+- Nujabes - Luv (sic)pt2 & Luv (sic)pt3 (feat Shing02)
+- 張震嶽 (Zhang Zhenyue) feat. 蔡健雅 (Tanya Chua)
+
+
 
 **Coffee or tea?**
 Drip coffee or a dirty chai. I guess the answer is both. 

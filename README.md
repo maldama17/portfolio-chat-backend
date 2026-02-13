@@ -107,12 +107,34 @@ const ALLOWED_ORIGINS = [
 ];
 ```
 
-## Testing Locally
+## Run and test locally
 
-1. Open `test.html` in your browser
-2. The UI simulates your portfolio
-3. Click "Chat with AI" to test the widget
-4. Note: Backend must be deployed for API calls to work
+You can run the backend and widget on your machine without pushing to Git.
+
+### 1. Run the backend locally
+
+In the project root (with [Vercel CLI](https://vercel.com/docs/cli) installed):
+
+```bash
+npx vercel dev
+```
+
+The API will be at `http://localhost:3000/api/chat`.
+
+- **Easiest:** Open **http://localhost:3000** — the root page redirects to the test widget.
+- **Direct:** Open **http://localhost:3000/test.html?local=1**
+
+The `?local=1` query param makes the widget use the local API. If you get 404, run `npx serve .` in another terminal and open `http://<port>/test.html?local=1`; the widget still calls the API at `http://localhost:3000/api/chat`.
+
+### 3. Test the widget
+
+1. Click “Chat with AI” and send a message (or click a suggested prompt).
+2. Responses come from your local backend and `prompts/` files.
+3. After changes to `api/chat.js` or `prompts/`, save and retest; no deploy needed.
+
+### 4. Environment variables for local
+
+Create a `.env.local` in the project root with the same variables you use on Vercel (e.g. `OPENAI_API_KEY`). `vercel dev` loads them automatically.
 
 ## Security
 

@@ -901,9 +901,17 @@ body {
   // CONFIGURATION
   // ==========================================================================
   
-  const ENDPOINT = 'https://portfolio-chat-backend.vercel.app/api/chat';
+  const ENDPOINT = (typeof URLSearchParams !== 'undefined' && new URLSearchParams(window.location.search).get('local') === '1')
+    ? 'http://localhost:3000/api/chat'
+    : 'https://portfolio-chat-backend.vercel.app/api/chat';
   const TYPING_SPEED = 6; // ms per character (very fast)
-  
+
+  // #region agent log
+  const DEBUG_LOG = (location, message, data, hypothesisId) => {
+    fetch('http://127.0.0.1:7245/ingest/aac9c7dd-2d7d-48f8-a5fb-7e8f0b6deba6', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location, message, data: data || {}, timestamp: Date.now(), hypothesisId }) }).catch(() => {});
+  };
+  // #endregion
+
   // Text Selection Feature Configuration
   const SELECTION_CONFIG = {
     minLength: 3,               // Minimum characters to show button
@@ -1503,12 +1511,23 @@ body {
   // ==========================================================================
 
   window.mllmAsk = function(prompt, isFollowup = false) {
+    // #region agent log
+    DEBUG_LOG('test.html:mllmAsk', 'mllmAsk called', { promptLen: (prompt && prompt.length) || 0, promptPreview: typeof prompt === 'string' ? prompt.slice(0, 60) : '', isFollowup }, 'H2_H5');
+    // #endregion
     document.getElementById('mllm-input').value = prompt;
     mllmSend(isFollowup ? prompt : null);
   };
 
   window.mllmSend = async function(clickedSuggestion = null) {
-    if (isLoading || isTyping || isRateLimited()) return;
+    // #region agent log
+    const rateLimited = isRateLimited();
+    DEBUG_LOG('test.html:mllmSend', 'mllmSend entry', { isLoading, isTyping, rateLimited }, 'H1_H4');
+    if (isLoading || isTyping || rateLimited) {
+      DEBUG_LOG('test.html:mllmSend', 'mllmSend early return', { reason: isLoading ? 'isLoading' : isTyping ? 'isTyping' : 'rateLimited' }, 'H1_H4');
+      if (!rateLimited) disableInput(false);
+      return;
+    }
+    // #endregion
 
     const input = document.getElementById('mllm-input');
     let message = input.value.trim();
@@ -1561,6 +1580,9 @@ body {
     // Show typing indicator
     isLoading = true;
     disableInput(true);
+    // #region agent log
+    DEBUG_LOG('test.html:mllmSend', 'mllmSend disabled input', {}, 'H3');
+    // #endregion
     inner.innerHTML += renderTypingIndicator();
     scrollToBottom(container);
 
@@ -1625,11 +1647,14 @@ body {
         renderMessages();
       }
     } catch (e) {
+      // #region agent log
+      DEBUG_LOG('test.html:mllmSend', 'mllmSend catch', { err: String(e) }, 'H3');
+      // #endregion
       console.error('MichaelLLM error:', e);
       const typingIndicator = document.getElementById('mllm-typing-indicator');
       if (typingIndicator) typingIndicator.remove();
-      
-      history.push({ 
+
+      history.push({
         role: 'assistant', 
         content: "Hmm, I'm having trouble connecting. Please check your internet and try again!",
         followups: []
@@ -1638,6 +1663,9 @@ body {
     }
 
     isLoading = false;
+    // #region agent log
+    DEBUG_LOG('test.html:mllmSend', 'mllmSend re-enabling input', {}, 'H3');
+    // #endregion
     disableInput(false);
     scrollToBottom(container); // Final scroll after message complete
   };
